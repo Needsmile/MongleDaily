@@ -94,6 +94,20 @@
             transform: rotate(-5deg);
             text-shadow: 1px 1px 0px rgba(255,255,255,0.8);
         }
+
+	#weather {
+    font-family: 'Gamja Flower', sans-serif;
+    box-shadow: inset 1px 1px 2px rgba(0,0,0,0.08);
+}
+
+#weather:hover {
+    background-color: #fef3c7;
+}
+
+#weather option {
+    background-color: #fcf8ee;
+    color: #78350f;
+}
     </style>
 </head>
 <body class="p-3 md:p-6 flex flex-col items-center min-h-screen">
@@ -141,7 +155,7 @@
 
         <select
             id="weather"
-            class="bg-transparent text-sm sm:text-base md:text-xl font-bold focus:outline-none cursor-pointer">
+            class="bg-amber-200 hover:bg-amber-300 text-amber-900 text-sm sm:text-base md:text-lg font-bold border-2 border-amber-800 rounded-md px-1 py-0.5 focus:outline-none cursor-pointer appearance-none transition-colors">
 
             <option value="☀️">☀️ 맑음</option>
             <option value="☁️">☁️ 흐림</option>
