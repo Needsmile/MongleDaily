@@ -32,18 +32,24 @@
 
         /* [교정] 모바일/팝업 등 가변 창을 위한 vw 기반 반응형 깍두기 공책 설정 */
         .kakdugi-notebook {
-            font-size: 6vw;
-            line-height: 9vw;
-            letter-spacing: 3vw;
-            padding: 4vw 3vw;
-            background-attachment: local;
-            background-image: 
-                linear-gradient(to right, rgba(239, 68, 68, 0.15) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(239, 68, 68, 0.15) 1px, transparent 1px);
-            background-size: 9vw 9vw; /* 세로 line-height와 일치시켜 가로세로 정정사각형 유지 */
-            background-position: 4.5vw 2.5vw;
-            font-weight: bold;
-            color: #2d3748;
+            font-size: clamp(18px, 5vw, 26px);
+   	    line-height: 1.8;
+            letter-spacing: 0.08em;
+	    padding: 14px;
+    
+	    background-attachment: local;
+	    background-image: 
+        	linear-gradient(to right, rgba(239, 68, 68, 0.15) 1px, transparent 1px),
+	        linear-gradient(to bottom, rgba(239, 68, 68, 0.15) 1px, transparent 1px);
+
+	    background-size: 2.2em 2.2em;
+	    background-position: 0.4em 0.2em;
+
+	    font-weight: bold;
+	    color: #2d3748;
+
+	    word-break: keep-all;
+	    overflow-wrap: break-word;
         }
 
         /* [교정] 화면이 넓은 데스크톱 환경(lg 해상도 이상)에서는 격자가 너무 커지지 않도록 고정px 락(Lock) 구현 */
@@ -59,14 +65,17 @@
         }
 
         /* [교정] 모달 내 깍두기 박스 배경 격자와 글자 정렬 비율 완벽 싱크로 조율 */
-        #modal-text.kakdugi-notebook {
-            font-size: 4.8vw !important;        /* 글자가 칸 밖으로 탈출하는 현상 방지 크기 */
-            line-height: 8vw !important;
-            letter-spacing: 3.2vw !important;   /* 자간 비율을 8vw 격자폭에 맞춰 최적화 */
-            padding: 4vw 2.5vw !important;
-            background-size: 8vw 8vw !important;
-            background-position: 4vw 2vw !important;
-            word-break: break-all;              /* 글자 단위로 정확히 칸마다 끊어지게 강제 */
+      #modal-text.kakdugi-notebook {
+ 	   font-size: clamp(16px, 4vw, 22px) !important;
+ 	   line-height: 1.8 !important;
+ 	   letter-spacing: 0.08em !important;
+ 	   padding: 14px !important;
+	
+	    background-size: 2.2em 2.2em !important;
+ 	   background-position: 0.4em 0.2em !important;
+
+	    word-break: keep-all !important;
+ 	   overflow-wrap: break-word !important;
         }
         @media (min-width: 1024px) {
             #modal-text.kakdugi-notebook {
@@ -183,7 +192,11 @@
 
     <div id="diary-modal" class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center p-4 z-50">
         <div class="retro-paper rounded-3xl p-6 max-w-md w-full relative">
-            <button onclick="closeModal()" class="absolute top-2 right-4 text-4xl font-bold text-amber-900 hover:scale-110">×</button>
+            <button
+		    onclick="deleteDiary()"
+		    class="absolute top-3 left-4 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg font-bold text-sm">
+		    삭제
+		</button>
             <div class="flex justify-between items-center border-b-2 border-amber-900 pb-2 mb-4 font-bold text-amber-950 text-xl">
                 <h3 id="modal-date">날짜</h3>
                 <span id="modal-weather" class="text-2xl">☀️</span>
@@ -216,6 +229,9 @@
         let currentMode = "photo"; 
         let diaryDatabase = {}; // 로컬 캐시용 객체
         let childName = "홍길동";
+	let selectedDiaryDate = getFormattedDate(new Date());
+	let isDirty = false;
+	let openedModalDate = "";
 
         let canvas, ctx, isDrawing = false;
 
@@ -233,10 +249,22 @@
         }
 
         async function initApp() {
-            setupCanvas();
-            await loadDiariesFromServer(); // 로그인 완료 직후 서버에서 전체 일기 긁어오기
-            renderTodayForm();
-            renderCalendar();
+             setupCanvas();
+
+	    document.getElementById('diary-text')
+	        .addEventListener('input', () => {
+	            isDirty = true;
+	        });
+
+	    document.getElementById('weather')
+	        .addEventListener('change', () => {
+	            isDirty = true;
+	        });
+
+	    await loadDiariesFromServer();
+
+	    renderTodayForm();
+	    renderCalendar();
         }
 
         // 서버(Supabase)에서 누적된 전체 일기 원격 로드 함수
@@ -390,14 +418,14 @@
         }
 
         // ★ 핵심: 작성한 일기를 실시간으로 인터넷 클라우드 DB에 집어넣는 비동기 처리 함수
-        async function saveDiary() {
-            const dateStr = getFormattedDate(new Date());
+        async function saveDiary(silent = false) {
+            const dateStr = selectedDiaryDate;
             const text = document.getElementById('diary-text').value;
             const weather = document.getElementById('weather').value;
 
             if(currentMode === 'draw' && !selectedImageData) {
                 const thumbCanvas = document.createElement('canvas');
-                const thumbCtx = thumbCanvas.createElement('canvas').getContext('2d');
+                const thumbCtx = thumbCanvas.getContext('2d');
                 thumbCanvas.width = 300;
                 thumbCanvas.height = (300 / canvas.width) * canvas.height;
                 thumbCtx.drawImage(canvas, 0, 0, thumbCanvas.width, thumbCanvas.height);
@@ -419,11 +447,13 @@
                         weather: weather,
                         diary_text: text,
                         image_data: selectedImageData
-                    }, { onConflict: 'diary_date' });
+                    }, { onConflict: 'username,diary_date' });
 
                 if (error) throw error;
 
-                alert('💮 클라우드 서버에 안전하게 일기가 백업 보관되었습니다!');
+                if(!silent) {
+ 				   alert('💮 일기를 잘 썼어요!');
+		}
                 
                 // 로컬 상태 최신화 동기화
                 await loadDiariesFromServer();
@@ -435,19 +465,33 @@
         }
 
         function renderTodayForm() {
-            const todayStr = getFormattedDate(new Date());
-            document.getElementById('current-date-display').innerText = `날짜: ${todayStr}`;
-            
-            if(diaryDatabase[todayStr]) {
-                const data = diaryDatabase[todayStr];
-                document.getElementById('diary-text').value = data.text;
-                document.getElementById('weather').value = data.weather;
-                if(data.image) {
-                    selectedImageData = data.image;
-                    showFinalPreview(selectedImageData);
-                }
-            }
-        }
+
+    	document.getElementById('current-date-display').innerText =
+        	`날짜: ${selectedDiaryDate}`;
+
+	    const data = diaryDatabase[selectedDiaryDate];
+
+	    document.getElementById('diary-text').value = "";
+	    document.getElementById('weather').value = "☀️";
+
+	    resetMediaSelection();
+
+	    if(data) {
+
+	        document.getElementById('diary-text').value =
+            	data.text || "";
+
+	        document.getElementById('weather').value =
+	            data.weather || "☀️";
+
+	        if(data.image) {
+	            selectedImageData = data.image;
+	            showFinalPreview(selectedImageData);
+	        }
+	    }
+
+	    isDirty = false;
+	}
 
         function renderCalendar() {
             const year = currentDate.getFullYear();
@@ -503,9 +547,18 @@
                     icon.style.alignSelf = "flex-end";
                     icon.style.fontSize = "1.25rem";
                     dayDiv.appendChild(icon);
-                    dayDiv.onclick = () => openModal(currentKey);
+                    dayDiv.onclick = (e) => {
+
+			    if(e.detail === 2) {
+			        openModal(currentKey);
+		        return;
+		    }
+
+			    selectDiaryDate(currentKey);
+		};
+
                 } else {
-                    dayDiv.onclick = () => alert('이날은 일기를 빼먹었군요!');
+                    dayDiv.onclick = () => selectDiaryDate(currentKey);
                 }
                 calendarDays.appendChild(dayDiv);
             }
@@ -517,6 +570,7 @@
         }
 
         function openModal(key) {
+	    openedModalDate = key;
             const data = diaryDatabase[key];
             document.getElementById('modal-date').innerText = `📅 검사일: ${key} (${data.name || '어린이'})`;
             document.getElementById('modal-weather').innerText = `날씨: ${data.weather}`;
@@ -542,6 +596,57 @@
             const d = String(date.getDate()).padStart(2, '0');
             return `${y}-${m}-${d}`;
         }
+
+	async function selectDiaryDate(newDate) {
+
+  	  if(isDirty) {
+	
+	        const shouldSave = confirm(
+	            "입력중인 일기를 저장할까요?"
+	        );
+	
+	        if(shouldSave) {
+	            await saveDiary(true);
+	        }
+	    }
+	
+	    selectedDiaryDate = newDate;
+	
+	    renderTodayForm();
+	}
+
+	async function deleteDiary() {
+
+    if(!confirm('정말 이 일기를 삭제할까요?')) {
+        return;
+    }
+
+    try {
+
+        const { error } = await _supabase
+            .from('diary_entries')
+            .delete()
+            .eq('diary_date', openedModalDate);
+
+        if(error) throw error;
+
+        delete diaryDatabase[openedModalDate];
+
+        closeModal();
+
+        renderCalendar();
+
+        if(selectedDiaryDate === openedModalDate) {
+            renderTodayForm();
+        }
+
+        alert('🗑️ 일기가 삭제되었습니다.');
+
+    } catch(err) {
+
+        alert('삭제 실패: ' + err.message);
+    }
+}
     </script>
 </body>
 </html>
