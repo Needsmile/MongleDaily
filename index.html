@@ -144,6 +144,14 @@
 
     📲 앱 설치하기
 </button>
+
+<button
+    id="bgm-btn"
+    onclick="toggleYouTubeBGM()"
+    class="mt-3 w-full bg-red-500 hover:bg-red-600 text-white text-xl font-bold py-2 rounded-xl border-2 border-white">
+
+    🎵 음악 재생
+</button>
         </div>
     </div>
 
@@ -1169,9 +1177,52 @@ function toggleSound() {
     document.getElementById('sound-toggle').innerText =
         soundEnabled ? '🔊' : '🔇';
 }
+
+let bgmOn = false;
+
+function toggleYouTubeBGM() {
+
+    const iframe =
+        document.getElementById('youtube-player');
+
+    const btn =
+        document.getElementById('bgm-btn');
+
+    // 원하는 유튜브 영상 ID
+    const videoId = "https://youtu.be/KEu5YL1VzEg?si=gNZ5AYJziHbA6tJi&t=15";
+
+    if(!bgmOn) {
+
+        iframe.src =
+            `https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1&playlist=${videoId}`;
+
+        bgmOn = true;
+
+        btn.innerText = "⏸ 음악 끄기";
+
+    } else {
+
+        iframe.src = "";
+
+        bgmOn = false;
+
+        btn.innerText = "🎵 음악 재생";
+    }
+}
 window.onload = () => {
     renderUserList();
 };
     </script>
+<!-- 숨겨진 유튜브 플레이어 -->
+<div id="youtube-bgm" style="display:none;">
+    <iframe
+        id="youtube-player"
+        width="0"
+        height="0"
+        src=""
+        frameborder="0"
+        allow="autoplay">
+    </iframe>
+</div>
 </body>
 </html>
