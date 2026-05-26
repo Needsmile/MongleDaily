@@ -120,17 +120,17 @@
     <div
         id="current-date-display"
         class="flex-1 min-w-0 px-2 py-2 text-center whitespace-nowrap text-[11px] sm:text-sm md:text-lg">
-        2026년 05월 26일
+        날짜
     </div>
 
     <!-- 요일 -->
     <div
         class="flex-1 min-w-0 px-2 py-2 text-center border-x-2 border-amber-900 whitespace-nowrap text-[11px] sm:text-sm md:text-lg">
-        요일: 화요일
+        요일
     </div>
 
     <!-- 날씨 -->
-    <div class="flex items-center justify-center px-1 py-1 bg-white min-w-[92px]">
+    <div class="flex items-center justify-center px-1 py-1 bg-white" style="min-width:92px;">
         <span class="mr-1 text-[10px] sm:text-xs whitespace-nowrap">
             날씨:
         </span>
@@ -522,8 +522,20 @@
 
         function renderTodayForm() {
 
-    	document.getElementById('current-date-display').innerText =
-        	`날짜: ${selectedDiaryDate}`;
+    	const selected = new Date(selectedDiaryDate);
+
+const weekdays = [
+    "일요일",
+    "월요일",
+    "화요일",
+    "수요일",
+    "목요일",
+    "금요일",
+    "토요일"
+];
+
+document.getElementById('current-date-display').innerText =
+    `${selectedDiaryDate} (${weekdays[selected.getDay()]})`;
 
 	    const data = diaryDatabase[selectedDiaryDate];
 
@@ -549,105 +561,146 @@
 	    isDirty = false;
 	}
 
-        function renderCalendar() {
-            const year = currentDate.getFullYear();
-            const month = currentDate.getMonth();
-            document.getElementById('calendar-month-year').innerText = `${year}년 ${month + 1}월 방학 검사표`;
-            
-            const firstDayIndex = new Date(year, month, 1).getDay();
-            const lastDay = new Date(year, month + 1, 0).getDate();
-            const calendarDays = document.getElementById('calendar-days');
-            calendarDays.innerHTML = "";
+function renderCalendar() {
 
-            for (let i = 0; i < firstDayIndex; i++) {
-                calendarDays.appendChild(document.createElement('div'));
-            }
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
 
-            for (let day = 1; day <= lastDay; day++) {
-                const dayDiv = document.createElement('div');
-                const currentKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    document.getElementById('calendar-month-year').innerText =
+        `${year}년 ${month + 1}월 방학 검사표`;
 
-		const today = new Date();
+    const firstDayIndex =
+        new Date(year, month, 1).getDay();
 
-		today.setHours(0,0,0,0);
+    const lastDay =
+        new Date(year, month + 1, 0).getDate();
 
-		const targetDate = new Date(year, month, day);
+    const calendarDays =
+        document.getElementById('calendar-days');
 
-		const isFutureDate = targetDate > today;
-                
-		const lock = document.createElement('div');
+    calendarDays.innerHTML = "";
 
-lock.innerText = "🔒";
+    for (let i = 0; i < firstDayIndex; i++) {
+        calendarDays.appendChild(document.createElement('div'));
+    }
 
-lock.style.position = "absolute";
-lock.style.bottom = "2px";
-lock.style.right = "4px";
-lock.style.fontSize = "14px";
+    for (let day = 1; day <= lastDay; day++) {
 
-dayDiv.appendChild(lock);
-                dayDiv.style.border = "2px dashed #8b5a2b";
-                dayDiv.style.borderRadius = "0.5rem";
-                dayDiv.style.padding = "0.25rem";
-                dayDiv.style.height = "4.8rem"; 
-                dayDiv.style.position = "relative";
-                dayDiv.style.overflow = "hidden";
-                dayDiv.style.display = "flex";
-                dayDiv.style.flexDirection = "column";
-                dayDiv.style.justifyContent = "between";
-                dayDiv.style.cursor = "pointer";
-                dayDiv.style.backgroundColor = "#ffffff";
-                
-                if(diaryDatabase[currentKey] && diaryDatabase[currentKey].image) {
-                    dayDiv.style.backgroundImage = `url(${diaryDatabase[currentKey].image})`;
-                    dayDiv.style.backgroundSize = 'cover';
-                    dayDiv.style.backgroundPosition = 'center';
-                    dayDiv.style.boxShadow = "inset 0 0 0 2000px rgba(255,255,255,0.5)";
-                }
+        const dayDiv = document.createElement('div');
 
-                const dayNum = document.createElement('span');
-                dayNum.innerText = day;
-                dayNum.style.fontWeight = "bold";
-                dayNum.style.fontSize = "1.25rem";
-                
-                const dayOfWeek = new Date(year, month, day).getDay();
-                if(dayOfWeek === 0) dayNum.style.color = "#ef4444";
-                if(dayOfWeek === 6) dayNum.style.color = "#3b82f6";
+        const currentKey =
+            `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 
-                dayDiv.appendChild(dayNum);
+        // 오늘 날짜 기준
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
 
-               if(isFutureDate) {
+        const targetDate = new Date(year, month, day);
 
-  		  // 미래 날짜 비활성화
-  		  dayDiv.style.opacity = "0.35";
-  		  dayDiv.style.cursor = "not-allowed";
- 		   dayDiv.style.backgroundColor = "#e5e7eb";
+        const isFutureDate = targetDate > today;
 
-  		  dayDiv.onclick = () => {
- 		       alert("📅 미래 날짜의 일기는 아직 쓸 수 없어요!");
-		    };
+        // 날짜 박스 스타일
+        dayDiv.style.border = "2px dashed #8b5a2b";
+        dayDiv.style.borderRadius = "0.5rem";
+        dayDiv.style.padding = "0.25rem";
+        dayDiv.style.height = "4.8rem";
+        dayDiv.style.position = "relative";
+        dayDiv.style.overflow = "hidden";
+        dayDiv.style.display = "flex";
+        dayDiv.style.flexDirection = "column";
+        dayDiv.style.justifyContent = "space-between";
+        dayDiv.style.cursor = "pointer";
+        dayDiv.style.backgroundColor = "#ffffff";
 
-		} else if(diaryDatabase[currentKey]) {
+        // 이미지 배경
+        if (
+            diaryDatabase[currentKey] &&
+            diaryDatabase[currentKey].image
+        ) {
 
-		    // 작성된 일기 → 팝업
-		    dayDiv.onclick = () => {
-		        openModal(currentKey);
-		    };
+            dayDiv.style.backgroundImage =
+                `url(${diaryDatabase[currentKey].image})`;
 
-		} else {
+            dayDiv.style.backgroundSize = 'cover';
+            dayDiv.style.backgroundPosition = 'center';
 
-		    // 빈 날짜 → 작성 가능
-		    dayDiv.onclick = () => {
-		        selectDiaryDate(currentKey);
-		    };
-		
-
-                } else {
-                    dayDiv.onclick = () => selectDiaryDate(currentKey);
-                }
-                calendarDays.appendChild(dayDiv);
-            }
+            dayDiv.style.boxShadow =
+                "inset 0 0 0 2000px rgba(255,255,255,0.5)";
         }
 
+        // 날짜 숫자
+        const dayNum = document.createElement('span');
+
+        dayNum.innerText = day;
+
+        dayNum.style.fontWeight = "bold";
+        dayNum.style.fontSize = "1.25rem";
+
+        const dayOfWeek =
+            new Date(year, month, day).getDay();
+
+        if (dayOfWeek === 0) {
+            dayNum.style.color = "#ef4444";
+        }
+
+        if (dayOfWeek === 6) {
+            dayNum.style.color = "#3b82f6";
+        }
+
+        dayDiv.appendChild(dayNum);
+
+        // 미래 날짜 잠금
+        if (isFutureDate) {
+
+            dayDiv.style.opacity = "0.35";
+            dayDiv.style.cursor = "not-allowed";
+            dayDiv.style.backgroundColor = "#e5e7eb";
+
+            const lock = document.createElement('div');
+
+            lock.innerText = "🔒";
+
+            lock.style.position = "absolute";
+            lock.style.bottom = "2px";
+            lock.style.right = "4px";
+            lock.style.fontSize = "14px";
+
+            dayDiv.appendChild(lock);
+
+            dayDiv.onclick = () => {
+                alert("📅 미래 날짜의 일기는 아직 쓸 수 없어요!");
+            };
+
+        }
+        // 작성된 일기
+        else if (diaryDatabase[currentKey]) {
+
+            const icon = document.createElement('span');
+
+            icon.innerText = "💮";
+
+            icon.style.alignSelf = "flex-end";
+            icon.style.fontSize = "1.25rem";
+
+            dayDiv.appendChild(icon);
+
+            dayDiv.onclick = () => {
+                openModal(currentKey);
+            };
+
+        }
+        // 빈 날짜
+        else {
+
+            dayDiv.onclick = () => {
+                selectDiaryDate(currentKey);
+            };
+
+        }
+
+        calendarDays.appendChild(dayDiv);
+    }
+}
         function changeMonth(direction) {
             currentDate.setMonth(currentDate.getMonth() + direction);
             renderCalendar();
