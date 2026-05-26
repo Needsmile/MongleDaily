@@ -617,29 +617,29 @@ dayDiv.appendChild(lock);
 
                if(isFutureDate) {
 
-    // 미래 날짜 비활성화
-    dayDiv.style.opacity = "0.35";
-    dayDiv.style.cursor = "not-allowed";
-    dayDiv.style.backgroundColor = "#e5e7eb";
+  		  // 미래 날짜 비활성화
+  		  dayDiv.style.opacity = "0.35";
+  		  dayDiv.style.cursor = "not-allowed";
+ 		   dayDiv.style.backgroundColor = "#e5e7eb";
 
-    dayDiv.onclick = () => {
-        alert("📅 미래 날짜의 일기는 아직 쓸 수 없어요!");
-    };
+  		  dayDiv.onclick = () => {
+ 		       alert("📅 미래 날짜의 일기는 아직 쓸 수 없어요!");
+		    };
 
-} else if(diaryDatabase[currentKey]) {
+		} else if(diaryDatabase[currentKey]) {
 
-    // 작성된 일기 → 팝업
-    dayDiv.onclick = () => {
-        openModal(currentKey);
-    };
+		    // 작성된 일기 → 팝업
+		    dayDiv.onclick = () => {
+		        openModal(currentKey);
+		    };
 
-} else {
+		} else {
 
-    // 빈 날짜 → 작성 가능
-    dayDiv.onclick = () => {
-        selectDiaryDate(currentKey);
-    };
-}
+		    // 빈 날짜 → 작성 가능
+		    dayDiv.onclick = () => {
+		        selectDiaryDate(currentKey);
+		    };
+		
 
                 } else {
                     dayDiv.onclick = () => selectDiaryDate(currentKey);
