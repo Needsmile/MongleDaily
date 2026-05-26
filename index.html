@@ -132,13 +132,23 @@
     </div>
 </div>
             </div>
+<div
+    id="streak-box"
+    class="mt-4 text-lg font-bold text-red-700">
+</div>
             <p class="text-sm text-amber-600 mt-6 font-bold">교육부 검인정 (주)몽글출판사</p>
+<button
+    id="install-btn"
+    class="hidden w-full bg-green-600 hover:bg-green-700 text-white text-xl font-bold py-2 rounded-xl border-2 border-white">
+
+    📲 앱 설치하기
+</button>
         </div>
     </div>
 
     <div id="main-app" class="w-full max-w-6xl hidden flex lg:flex-row gap-6 items-stretch overflow-x-auto snap-x snap-mandatory">
         
-        <div class="w-full lg:w-1/2 retro-paper rounded-3xl p-5 shadow-2xl flex flex-col">
+        <div class="w-full min-w-full lg:min-w-0 lg:w-1/2 retro-paper rounded-3xl p-5 shadow-2xl flex flex-col">
           <div class="flex items-center border-2 border-amber-900 bg-amber-100 bg-opacity-50 mb-4 rounded-lg overflow-hidden text-amber-900 font-bold">
 
       <!-- 홈 버튼 -->
@@ -166,6 +176,7 @@
 
         <select
             id="weather"
+
             class="bg-amber-200 hover:bg-amber-300 text-amber-900 text-sm sm:text-base md:text-lg font-bold border-2 border-amber-800 rounded-md px-1 py-0.5 focus:outline-none cursor-pointer appearance-none transition-colors">
 
             <option value="☀️">☀️ 맑음</option>
@@ -175,6 +186,14 @@
             <option value="☃️">☃️ 눈옴</option>
 
         </select>
+
+<button
+    id="sound-toggle"
+    onclick="toggleSound()"
+    class="ml-1 px-2 py-1 bg-amber-200 hover:bg-amber-300 border-2 border-amber-800 rounded-md text-sm font-bold">
+
+    🔊
+</button>
     </div>
 
 </div>
@@ -233,7 +252,21 @@
 
                 <div class="grid grid-cols-7 gap-2" id="calendar-days"></div>
             </div>
-            
+            <div class="mt-4">
+
+    <button
+        onclick="toggleCommunity()"
+        class="w-full bg-amber-200 hover:bg-amber-300 border-2 border-amber-800 rounded-xl py-2 text-xl font-bold text-amber-900">
+
+        🌎 친구들 일기 구경하기
+    </button>
+
+    <div
+        id="community-list"
+        class="hidden mt-3 bg-white border-2 border-amber-800 rounded-xl p-3 max-h-80 overflow-y-auto space-y-3">
+    </div>
+
+</div>
             <div class="mt-4 p-3 bg-white border-2 border-amber-800 rounded-xl text-center font-bold text-amber-900 text-sm">
                 🎉 축하합니다! 이제 작성하신 일기는 데이터베이스에 안전하게 저장됩니다.
             </div>
@@ -313,7 +346,10 @@
 	let isDirty = false;
 	let openedModalDate = "";
 	let savedUsers = [];
+	let autoSaveTimer = null;
+	let soundEnabled = true;
 
+	const stampSound = new Audio('stamp.mp3');
         let canvas, ctx, isDrawing = false;
 
         function handleLogin() {
@@ -332,11 +368,33 @@
 
         async function initApp() {
              setupCanvas();
+const savedSound =
+    localStorage.getItem('soundEnabled');
+
+if(savedSound !== null) {
+
+    soundEnabled = savedSound === 'true';
+}
+
+document.getElementById('sound-toggle').innerText =
+    soundEnabled ? '🔊' : '🔇';
 
 	    document.getElementById('diary-text')
-	        .addEventListener('input', () => {
-	            isDirty = true;
-	        });
+	     .addEventListener('input', () => {
+
+    isDirty = true;
+
+    clearTimeout(autoSaveTimer);
+
+  if(document.getElementById('diary-text').value.length > 5) {
+
+    autoSaveTimer = setTimeout(() => {
+
+        saveDiary(true);
+
+    }, 3000);
+}
+});
 
 	    document.getElementById('weather')
 	        .addEventListener('change', () => {
@@ -347,6 +405,7 @@
 
 	    renderTodayForm();
 	    renderCalendar();
+calculateStreak();
         }
 
         // 서버(Supabase)에서 누적된 전체 일기 원격 로드 함수
@@ -553,6 +612,12 @@
                 if (error) throw error;
 
                 if(!silent) {
+if(soundEnabled) {
+
+    stampSound.currentTime = 0;
+
+    stampSound.play();
+}
  				   alert('💮 일기를 잘 썼어요!');
 		}
                 
@@ -700,6 +765,7 @@ function renderCalendar() {
             dayDiv.style.opacity = "0.35";
             dayDiv.style.cursor = "not-allowed";
             dayDiv.style.backgroundColor = "#e5e7eb";
+	   dayDiv.style.filter = "grayscale(0.5)";
 
             const lock = document.createElement('div');
 
@@ -719,6 +785,26 @@ function renderCalendar() {
         }
         // 작성된 일기
         else if (diaryDatabase[currentKey]) {
+const prevDate = new Date(year, month, day);
+
+prevDate.setDate(prevDate.getDate() - 1);
+
+const prevKey =
+    getFormattedDate(prevDate);
+
+if (diaryDatabase[prevKey]) {
+
+    const line = document.createElement('div');
+
+    line.style.position = "absolute";
+    line.style.left = "-8px";
+    line.style.top = "50%";
+    line.style.width = "16px";
+    line.style.height = "4px";
+    line.style.background = "#ef4444";
+
+    dayDiv.appendChild(line);
+}
 
             const icon = document.createElement('span');
 
@@ -821,7 +907,8 @@ function renderCalendar() {
         const { error } = await _supabase
             .from('diary_entries')
             .delete()
-            .eq('diary_date', openedModalDate);
+            .eq('diary_date', openedModalDate)
+            .eq('username', childName);
 
         if(error) throw error;
 
@@ -843,11 +930,20 @@ function renderCalendar() {
     }
 }
 
-	function goToHome() {
+	async function goToHome() {
 
-    const confirmMove = confirm(
-        "첫 화면으로 돌아갈까요?"
-    );
+    if (isDirty) {
+
+        const shouldSave =
+            confirm("작성중인 일기를 저장할까요?");
+
+        if (shouldSave) {
+            await saveDiary(true);
+        }
+    }
+
+    const confirmMove =
+        confirm("첫 화면으로 돌아갈까요?");
 
     if (!confirmMove) return;
 
@@ -897,8 +993,11 @@ function renderUserList() {
             "px-3 py-1 bg-amber-100 hover:bg-amber-200 rounded-lg border border-amber-700 text-lg font-bold";
 
         btn.onclick = () => {
-            document.getElementById('username').value = user;
-        };
+
+    document.getElementById('username').value = user;
+
+    handleLogin();
+};
 
         container.appendChild(btn);
     });
@@ -913,7 +1012,134 @@ async function editDiary() {
     document.getElementById('diary-text').focus();
 }
 
-renderUserList();
+async function toggleCommunity() {
+
+    const box =
+        document.getElementById('community-list');
+
+    if (!box.classList.contains('hidden')) {
+
+        box.classList.add('hidden');
+        return;
+    }
+
+    box.classList.remove('hidden');
+
+    box.innerHTML = "불러오는 중...";
+
+    const { data, error } = await _supabase
+        .from('diary_entries')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+    if (error) {
+
+        box.innerHTML = "불러오기 실패";
+        return;
+    }
+
+    box.innerHTML = "";
+
+    data.forEach(item => {
+
+        const div = document.createElement('div');
+
+        div.className =
+            "border-b border-amber-200 pb-2";
+
+        div.innerHTML = `
+            <div class="font-bold text-amber-900">
+                🧒 ${item.username}
+            </div>
+
+            <div class="text-sm text-gray-600">
+                📅 ${item.diary_date}
+            </div>
+
+            <div class="mt-1 text-amber-800 line-clamp-2">
+                ${item.diary_text || ""}
+            </div>
+        `;
+
+        box.appendChild(div);
+    });
+}
+
+function calculateStreak() {
+
+    const keys =
+        Object.keys(diaryDatabase).sort();
+
+    let streak = 0;
+
+    let today = new Date();
+
+    today.setHours(0,0,0,0);
+
+    for(let i = 0; i < 365; i++) {
+
+        const checkDate = new Date(today);
+
+        checkDate.setDate(today.getDate() - i);
+
+        const key =
+            getFormattedDate(checkDate);
+
+        if(keys.includes(key)) {
+
+            streak++;
+
+        } else {
+
+            break;
+        }
+    }
+
+    document.getElementById('streak-box').innerText =
+        `💮 ${streak}일 연속 그림일기 작성중!`;
+}
+
+let deferredPrompt;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+
+    e.preventDefault();
+
+    deferredPrompt = e;
+
+    const btn =
+        document.getElementById('install-btn');
+
+    btn.classList.remove('hidden');
+
+    btn.onclick = async () => {
+
+        deferredPrompt.prompt();
+
+        await deferredPrompt.userChoice;
+
+        deferredPrompt = null;
+
+        btn.classList.add('hidden');
+    };
+});
+
+function toggleSound() {
+
+    soundEnabled = !soundEnabled;
+
+    localStorage.setItem(
+        'soundEnabled',
+        soundEnabled
+    );
+
+    document.getElementById('sound-toggle').innerText =
+        soundEnabled ? '🔊' : '🔇';
+}
+window.onload = () => {
+    renderUserList();
+};
     </script>
 </body>
 </html>
