@@ -13,9 +13,10 @@
     
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#2b4436">
-
+	
     <link rel="apple-touch-icon" sizes="180x180" href="/icon-192.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="그림일기">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
@@ -349,6 +350,7 @@
 	let autoSaveTimer = null;
 	let soundEnabled = true;
 
+
 	const stampSound = new Audio('stamp.mp3');
         let canvas, ctx, isDrawing = false;
 
@@ -579,6 +581,8 @@ calculateStreak();
 
         // ★ 핵심: 작성한 일기를 실시간으로 인터넷 클라우드 DB에 집어넣는 비동기 처리 함수
         async function saveDiary(silent = false) {
+
+		let imageUrl = "";
             const dateStr = selectedDiaryDate;
             const text = document.getElementById('diary-text').value;
             const weather = document.getElementById('weather').value;
@@ -596,6 +600,34 @@ calculateStreak();
                 alert('내용이나 그림을 작성해 주세요!');
                 return;
             }
+		 if (selectedImageData) {
+
+        const fileName =
+            `${childName}/${Date.now()}.jpg`;
+
+        const blob =
+            await (await fetch(selectedImageData)).blob();
+
+        const { error: uploadError } =
+            await _supabase.storage
+                .from('diary-images')
+                .upload(fileName, blob, {
+                    contentType: 'image/jpeg',
+                    upsert: true
+                });
+
+        if(uploadError) {
+            throw uploadError;
+        }
+
+        const { data: publicUrlData } =
+            _supabase.storage
+                .from('diary-images')
+                .getPublicUrl(fileName);
+
+        imageUrl =
+            publicUrlData.publicUrl;
+    }
 
             // [Supabase Upsert 트랜잭션 실행] 기존 날짜가 있으면 덮어쓰고, 없으면 새로 삽입
             try {
@@ -606,7 +638,7 @@ calculateStreak();
                         username: childName,
                         weather: weather,
                         diary_text: text,
-                        image_data: selectedImageData
+                        image_data: imageUrl
                     }, { onConflict: 'username,diary_date' });
 
                 if (error) throw error;
