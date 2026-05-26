@@ -118,14 +118,25 @@
             <h2 class="text-4xl font-bold text-amber-800 mb-6">🎨 그림일기장 🎨</h2>
             <p class="text-lg text-amber-700 font-bold mb-4">제 ○학년 ○반 이름표를 적어주세요</p>
             <div class="space-y-4">
-                <input type="text" id="username" placeholder="이름 홍 길 동" value="홍길동" class="w-full border-b-4 border-amber-800 bg-transparent text-2xl text-center focus:outline-none placeholder-amber-600 font-bold tracking-widest">
+                <input type="text" id="username" placeholder="이름 몽 글 이" value="몽글이" class="w-full border-b-4 border-amber-800 bg-transparent text-2xl text-center focus:outline-none placeholder-amber-600 font-bold tracking-widest">
+
                 <button onclick="handleLogin()" class="w-full bg-red-600 hover:bg-red-700 text-white text-2xl font-bold py-3 rounded-xl shadow-md transition duration-200 border-2 border-white">일기장 펼치기 📖</button>
+<div class="mt-4">
+    <p class="text-amber-800 font-bold mb-2">
+        최근 친구들
+    </p>
+
+    <div
+        id="recent-users"
+        class="flex flex-wrap gap-2 justify-center">
+    </div>
+</div>
             </div>
             <p class="text-sm text-amber-600 mt-6 font-bold">교육부 검인정 (주)몽글출판사</p>
         </div>
     </div>
 
-    <div id="main-app" class="w-full max-w-6xl hidden flex flex-col lg:flex-row gap-6 items-stretch">
+    <div id="main-app" class="w-full max-w-6xl hidden flex lg:flex-row gap-6 items-stretch overflow-x-auto snap-x snap-mandatory">
         
         <div class="w-full lg:w-1/2 retro-paper rounded-3xl p-5 shadow-2xl flex flex-col">
           <div class="flex items-center border-2 border-amber-900 bg-amber-100 bg-opacity-50 mb-4 rounded-lg overflow-hidden text-amber-900 font-bold">
@@ -208,11 +219,11 @@
             <button onclick="saveDiary()" class="mt-4 bg-red-600 hover:bg-red-700 text-white text-2xl font-bold py-2 rounded-xl shadow-lg transition duration-200 border-2 border-white tracking-wider">💮 참 잘했어요 도장 찍기</button>
         </div>
 
-        <div class="w-full lg:w-1/2 retro-paper rounded-3xl p-5 shadow-2xl flex flex-col justify-between bg-yellow-50 bg-opacity-30">
+        <div class="w-full lg:w-1/2 min-w-full lg:min-w-0 snap-center retro-paper rounded-3xl p-5 shadow-2xl flex flex-col justify-between bg-yellow-50 bg-opacity-30">
             <div>
                 <div class="flex justify-between items-center border-b-4 border-amber-900 pb-2 mb-4">
                     <button onclick="changeMonth(-1)" class="text-2xl font-bold text-amber-900 hover:scale-120 px-2">◀</button>
-                    <h2 class="text-xl sm:text-2xl md:text-3xl font-bold text-amber-900 tracking-normal sm:tracking-widest whitespace-nowrap text-center flex-grow" id="calendar-month-year">2026년 5월 월간 검사표</h2>
+                    <h2 class="text-xl sm:text-2xl md:text-3xl font-bold text-amber-900 tracking-normal sm:tracking-widest whitespace-nowrap text-center flex-grow" id="calendar-month-year">2026년 5월 월간 도장표</h2>
                     <button onclick="changeMonth(1)" class="text-2xl font-bold text-amber-900 hover:scale-120 px-2">▶</button>
                 </div>
 
@@ -224,7 +235,7 @@
             </div>
             
             <div class="mt-4 p-3 bg-white border-2 border-amber-800 rounded-xl text-center font-bold text-amber-900 text-sm">
-                🎉 축하합니다! 이제 작성하신 일기는 내 개인 클라우드 서버 데이터베이스에 안전하게 영구 저장됩니다.
+                🎉 축하합니다! 이제 작성하신 일기는 데이터베이스에 안전하게 저장됩니다.
             </div>
         </div>
     </div>
@@ -233,19 +244,31 @@
     <div class="retro-paper rounded-3xl p-6 max-w-md w-full relative">
 
         <!-- 상단 버튼 영역 -->
-        <div class="flex justify-between items-center mb-4">
-            <button
-                onclick="deleteDiary()"
-                class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg font-bold text-sm">
-                삭제
-            </button>
+       <div class="flex justify-between items-center mb-4 gap-2">
 
-            <button
-                onclick="closeModal()"
-                class="text-4xl leading-none font-bold text-amber-900 hover:scale-110 transition-transform">
-                ×
-            </button>
-        </div>
+    <div class="flex gap-2">
+
+        <button
+            onclick="editDiary()"
+            class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg font-bold text-sm">
+            수정
+        </button>
+
+        <button
+            onclick="deleteDiary()"
+            class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg font-bold text-sm">
+            삭제
+        </button>
+
+    </div>
+
+    <button
+        onclick="closeModal()"
+        class="text-4xl leading-none font-bold text-amber-900 hover:scale-110 transition-transform">
+        ×
+    </button>
+
+</div>
 
         <!-- 날짜 + 날씨 영역 -->
         <div class="flex justify-between items-center border-b-2 border-amber-900 pb-2 mb-4 font-bold text-amber-950 text-xl">
@@ -285,17 +308,19 @@
         let selectedImageData = ""; 
         let currentMode = "photo"; 
         let diaryDatabase = {}; // 로컬 캐시용 객체
-        let childName = "홍길동";
+        let childName = "몽글이";
 	let selectedDiaryDate = getFormattedDate(new Date());
 	let isDirty = false;
 	let openedModalDate = "";
+	let savedUsers = [];
 
         let canvas, ctx, isDrawing = false;
 
         function handleLogin() {
             const name = document.getElementById('username').value.trim();
-            if(!name) return alert('어린이 이름을 입력해 주세요!');
+            if(!name) return alert('이름을 입력해 주세요!');
             childName = name;
+	   saveUserName(name);
             
             document.getElementById('login-section').style.display = 'none';
             const mainApp = document.getElementById('main-app');
@@ -831,6 +856,64 @@ function renderCalendar() {
     document.getElementById('login-section').style.display = 'block';
 }
 
+function saveUserName(name) {
+
+    let users =
+        JSON.parse(localStorage.getItem('diaryUsers') || '[]');
+
+    if (!users.includes(name)) {
+        users.unshift(name);
+    }
+
+    users = users.slice(0, 5);
+
+    localStorage.setItem(
+        'diaryUsers',
+        JSON.stringify(users)
+    );
+
+    renderUserList();
+}
+
+function renderUserList() {
+
+    const container =
+        document.getElementById('recent-users');
+
+    if (!container) return;
+
+    const users =
+        JSON.parse(localStorage.getItem('diaryUsers') || '[]');
+
+    container.innerHTML = "";
+
+    users.forEach(user => {
+
+        const btn = document.createElement('button');
+
+        btn.innerText = `🧒 ${user}`;
+
+        btn.className =
+            "px-3 py-1 bg-amber-100 hover:bg-amber-200 rounded-lg border border-amber-700 text-lg font-bold";
+
+        btn.onclick = () => {
+            document.getElementById('username').value = user;
+        };
+
+        container.appendChild(btn);
+    });
+}
+
+async function editDiary() {
+
+    closeModal();
+
+    await selectDiaryDate(openedModalDate);
+
+    document.getElementById('diary-text').focus();
+}
+
+renderUserList();
     </script>
 </body>
 </html>
