@@ -114,18 +114,27 @@
     <div id="main-app" class="w-full max-w-6xl hidden flex flex-col lg:flex-row gap-6 items-stretch">
         
         <div class="w-full lg:w-1/2 retro-paper rounded-3xl p-5 shadow-2xl flex flex-col">
-            <div class="flex items-center justify-between gap-1 border-2 border-amber-900 bg-amber-100 bg-opacity-50 mb-4 rounded-lg overflow-hidden text-amber-900 font-bold">
+          <div class="flex items-center border-2 border-amber-900 bg-amber-100 bg-opacity-50 mb-4 rounded-lg overflow-hidden text-amber-900 font-bold">
+
+      <!-- 홈 버튼 -->
+    <button
+        onclick="goToHome()"
+        class="px-3 py-2 bg-amber-200 hover:bg-amber-300 border-r-2 border-amber-900 text-lg font-bold whitespace-nowrap">
+        🏠
+    </button>
 
     <!-- 날짜 -->
     <div
         id="current-date-display"
-        class="flex-1 min-w-0 px-2 py-2 text-center whitespace-nowrap text-[11px] sm:text-sm md:text-lg">
-        날짜
+        class="flex-1 min-w-0 px-2 py-2 text-center whitespace-nowrap text-xs sm:text-sm md:text-lg">
+        2026-05-27
     </div>
 
-    <!-- 요일   <div class="flex-1 min-w-0 px-2 py-2 text-center border-x-2 border-amber-900 whitespace-nowrap text-[11px] sm:text-sm md:text-lg">     요일   </div> -->
     <!-- 날씨 -->
-    <div class="flex items-center justify-center px-1 py-1 bg-white" style="min-width:92px;">
+    <div
+        class="flex items-center justify-center px-1 py-1 bg-white border-l-2 border-amber-900"
+        style="min-width:92px;">
+
         <span class="mr-1 text-[10px] sm:text-xs whitespace-nowrap">
             날씨:
         </span>
@@ -133,11 +142,13 @@
         <select
             id="weather"
             class="bg-transparent text-sm sm:text-base md:text-xl font-bold focus:outline-none cursor-pointer">
+
             <option value="☀️">☀️ 맑음</option>
             <option value="☁️">☁️ 흐림</option>
             <option value="☔">☔ 비옴</option>
             <option value="⚡">⚡ 천둥</option>
             <option value="☃️">☃️ 눈옴</option>
+
         </select>
     </div>
 
@@ -304,7 +315,7 @@
             try {
                 const { data, error } = await _supabase
                     .from('diary_entries')
-                    .select('*');
+                    .select('*').eq('username', childName);;
                 
                 if (error) throw error;
                 
@@ -792,6 +803,20 @@ function renderCalendar() {
         alert('삭제 실패: ' + err.message);
     }
 }
+
+	function goToHome() {
+
+    const confirmMove = confirm(
+        "첫 화면으로 돌아갈까요?"
+    );
+
+    if (!confirmMove) return;
+
+    document.getElementById('main-app').style.display = 'none';
+
+    document.getElementById('login-section').style.display = 'block';
+}
+
     </script>
 </body>
 </html>
