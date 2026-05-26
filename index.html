@@ -575,6 +575,16 @@
 
 		const isFutureDate = targetDate > today;
                 
+		const lock = document.createElement('div');
+
+lock.innerText = "🔒";
+
+lock.style.position = "absolute";
+lock.style.bottom = "2px";
+lock.style.right = "4px";
+lock.style.fontSize = "14px";
+
+dayDiv.appendChild(lock);
                 dayDiv.style.border = "2px dashed #8b5a2b";
                 dayDiv.style.borderRadius = "0.5rem";
                 dayDiv.style.padding = "0.25rem";
