@@ -32,7 +32,6 @@
 
         /* [교정] 모바일/팝업 등 가변 창을 위한 vw 기반 반응형 깍두기 공책 설정 */
         .kakdugi-notebook {
-            /* 창 너비에 맞춰 모든 요소가 유연하게 변합니다 */
             font-size: 6vw;
             line-height: 9vw;
             letter-spacing: 3vw;
@@ -59,19 +58,22 @@
             }
         }
 
-        /* [교정] 모달 내 깍두기 박스 전용 세부 조율 (중복 스타일 충돌 제거) */
+        /* [교정] 모달 내 깍두기 박스 배경 격자와 글자 정렬 비율 완벽 싱크로 조율 */
         #modal-text.kakdugi-notebook {
-            font-size: 5vw !important;
+            font-size: 4.8vw !important;        /* 글자가 칸 밖으로 탈출하는 현상 방지 크기 */
             line-height: 8vw !important;
-            letter-spacing: 3vw !important;
+            letter-spacing: 3.2vw !important;   /* 자간 비율을 8vw 격자폭에 맞춰 최적화 */
+            padding: 4vw 2.5vw !important;
             background-size: 8vw 8vw !important;
             background-position: 4vw 2vw !important;
+            word-break: break-all;              /* 글자 단위로 정확히 칸마다 끊어지게 강제 */
         }
         @media (min-width: 1024px) {
             #modal-text.kakdugi-notebook {
                 font-size: 20px !important;
                 line-height: 36px !important;
-                letter-spacing: 6px !important;
+                letter-spacing: 16px !important;
+                padding: 14px 12px !important;
                 background-size: 36px 36px !important;
                 background-position: 8px 4px !important;
             }
@@ -161,9 +163,9 @@
         <div class="w-full lg:w-1/2 retro-paper rounded-3xl p-5 shadow-2xl flex flex-col justify-between bg-yellow-50 bg-opacity-30">
             <div>
                 <div class="flex justify-between items-center border-b-4 border-amber-900 pb-2 mb-4">
-                    <button onclick="changeMonth(-1)" class="text-2xl font-bold text-amber-900 hover:scale-120">◀</button>
-                    <h2 class="text-3xl font-bold text-amber-900 tracking-widest" id="calendar-month-year">2026년 5월 월간 검사표</h2>
-                    <button onclick="changeMonth(1)" class="text-2xl font-bold text-amber-900 hover:scale-120">▶</button>
+                    <button onclick="changeMonth(-1)" class="text-2xl font-bold text-amber-900 hover:scale-120 px-2">◀</button>
+                    <h2 class="text-xl sm:text-2xl md:text-3xl font-bold text-amber-900 tracking-normal sm:tracking-widest whitespace-nowrap text-center flex-grow" id="calendar-month-year">2026년 5월 월간 검사표</h2>
+                    <button onclick="changeMonth(1)" class="text-2xl font-bold text-amber-900 hover:scale-120 px-2">▶</button>
                 </div>
 
                 <div class="grid grid-cols-7 text-center font-bold text-lg mb-2 text-amber-950 bg-amber-200 bg-opacity-50 py-1 rounded">
@@ -192,7 +194,7 @@
             </div>
             
             <div class="relative">
-                <p id="modal-text" class="text-xl bg-white p-4 rounded-xl border-2 border-amber-900 shadow-inner whitespace-pre-wrap min-h-100 kakdugi-notebook" style="height: 150px; letter-spacing: 6px; font-size:20px; line-height:36px; background-size:36px 36px;"></p>
+                <p id="modal-text" class="bg-white rounded-xl border-2 border-amber-900 shadow-inner whitespace-pre-wrap kakdugi-notebook" style="height: 160px;"></p>
                 <div class="absolute -bottom-4 -right-2 retro-stamp rounded-full p-2 text-center w-24 h-24 flex flex-col items-center justify-center font-black text-xs border-double">
                     <span class="text-lg">💮</span>
                     참잘했어요
@@ -395,7 +397,7 @@
 
             if(currentMode === 'draw' && !selectedImageData) {
                 const thumbCanvas = document.createElement('canvas');
-                const thumbCtx = thumbCanvas.getContext('2d');
+                const thumbCtx = thumbCanvas.createElement('canvas').getContext('2d');
                 thumbCanvas.width = 300;
                 thumbCanvas.height = (300 / canvas.width) * canvas.height;
                 thumbCtx.drawImage(canvas, 0, 0, thumbCanvas.width, thumbCanvas.height);
