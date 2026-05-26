@@ -114,20 +114,39 @@
     <div id="main-app" class="w-full max-w-6xl hidden flex flex-col lg:flex-row gap-6 items-stretch">
         
         <div class="w-full lg:w-1/2 retro-paper rounded-3xl p-5 shadow-2xl flex flex-col">
-            <div class="grid grid-cols-3 gap-2 border-2 border-amber-900 bg-amber-100 bg-opacity-50 text-xl font-bold text-center mb-4 rounded-lg overflow-hidden">
-                <div class="border-r-2 border-amber-900 p-2 text-amber-900" id="current-date-display">2026년 05월 26일</div>
-                <div class="border-r-2 border-amber-900 p-2 text-amber-900">요일: 화요일</div>
-                <div class="p-1 flex items-center justify-center bg-white">
-                    <span class="mr-1 text-sm text-amber-900">날씨:</span>
-                    <select id="weather" class="bg-transparent text-xl font-bold focus:outline-none cursor-pointer">
-                        <option value="☀️">☀️ 맑음</option>
-                        <option value="☁️">☁️ 흐림</option>
-                        <option value="☔">☔ 비옴</option>
-                        <option value="⚡">⚡ 천둥</option>
-                        <option value="☃️">☃️ 눈옴</option>
-                    </select>
-                </div>
-            </div>
+            <div class="flex items-center justify-between gap-1 border-2 border-amber-900 bg-amber-100 bg-opacity-50 mb-4 rounded-lg overflow-hidden text-amber-900 font-bold">
+
+    <!-- 날짜 -->
+    <div
+        id="current-date-display"
+        class="flex-1 min-w-0 px-2 py-2 text-center whitespace-nowrap text-[11px] sm:text-sm md:text-lg">
+        2026년 05월 26일
+    </div>
+
+    <!-- 요일 -->
+    <div
+        class="flex-1 min-w-0 px-2 py-2 text-center border-x-2 border-amber-900 whitespace-nowrap text-[11px] sm:text-sm md:text-lg">
+        요일: 화요일
+    </div>
+
+    <!-- 날씨 -->
+    <div class="flex items-center justify-center px-1 py-1 bg-white min-w-[92px]">
+        <span class="mr-1 text-[10px] sm:text-xs whitespace-nowrap">
+            날씨:
+        </span>
+
+        <select
+            id="weather"
+            class="bg-transparent text-sm sm:text-base md:text-xl font-bold focus:outline-none cursor-pointer">
+            <option value="☀️">☀️ 맑음</option>
+            <option value="☁️">☁️ 흐림</option>
+            <option value="☔">☔ 비옴</option>
+            <option value="⚡">⚡ 천둥</option>
+            <option value="☃️">☃️ 눈옴</option>
+        </select>
+    </div>
+
+</div>
 
             <div class="flex w-full mb-2 border-2 border-amber-800 rounded-lg overflow-hidden text-lg font-bold">
                 <button id="tab-photo-btn" onclick="switchUploadMethod('photo')" class="w-1/2 py-2 bg-amber-100 text-amber-950 transition-colors">📸 사진 첨부하기</button>
@@ -565,14 +584,17 @@
                     icon.style.alignSelf = "flex-end";
                     icon.style.fontSize = "1.25rem";
                     dayDiv.appendChild(icon);
-                    dayDiv.onclick = (e) => {
+                    dayDiv.onclick = () => {
 
-			    if(e.detail === 2) {
-			        openModal(currentKey);
-		        return;
-		    }
+   				 // 이미 작성된 일기 → 팝업 열기
+  				  if(diaryDatabase[currentKey]) {
+ 				       openModal(currentKey);
+			    }
 
-			    selectDiaryDate(currentKey);
+  				  // 빈 날짜 → 작성 페이지 이동
+    				else {
+    			    selectDiaryDate(currentKey);
+   				 }
 		};
 
                 } else {
