@@ -190,32 +190,49 @@
         </div>
     </div>
 
-    <div id="diary-modal" class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center p-4 z-50">
-        <div class="retro-paper rounded-3xl p-6 max-w-md w-full relative">
-	    <button onclick="closeModal()" class="absolute top-2 right-4 text-4xl font-bold text-amber-900 hover:scale-110">×</button>
+   <div id="diary-modal" class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center p-4 z-50">
+    <div class="retro-paper rounded-3xl p-6 max-w-md w-full relative">
+
+        <!-- 상단 버튼 영역 -->
+        <div class="flex justify-between items-center mb-4">
             <button
-		    onclick="deleteDiary()"
-		    class="absolute top-3 left-4 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg font-bold text-sm">
-		    삭제
-		</button>
-            <div class="flex justify-between items-center border-b-2 border-amber-900 pb-2 mb-4 font-bold text-amber-950 text-xl">
-                <h3 id="modal-date">날짜</h3>
-                <span id="modal-weather" class="text-2xl">☀️</span>
-            </div>
-            
-            <div class="bg-white p-2 border-2 border-gray-300 rounded-xl mb-4">
-                <img id="modal-image" class="w-full h-48 object-contain rounded-lg bg-gray-50" src="" alt="그림">
-            </div>
-            
-            <div class="relative">
-                <p id="modal-text" class="bg-white rounded-xl border-2 border-amber-900 shadow-inner whitespace-pre-wrap kakdugi-notebook" style="height: 160px;"></p>
-                <div class="absolute -bottom-4 -right-2 retro-stamp rounded-full p-2 text-center w-24 h-24 flex flex-col items-center justify-center font-black text-xs border-double">
-                    <span class="text-lg">💮</span>
-                    참잘했어요
-                </div>
+                onclick="deleteDiary()"
+                class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg font-bold text-sm">
+                삭제
+            </button>
+
+            <button
+                onclick="closeModal()"
+                class="text-4xl leading-none font-bold text-amber-900 hover:scale-110 transition-transform">
+                ×
+            </button>
+        </div>
+
+        <!-- 날짜 + 날씨 영역 -->
+        <div class="flex justify-between items-center border-b-2 border-amber-900 pb-2 mb-4 font-bold text-amber-950 text-xl">
+            <h3 id="modal-date">날짜</h3>
+            <span id="modal-weather" class="text-2xl">☀️</span>
+        </div>
+
+        <!-- 이미지 -->
+        <div class="bg-white p-2 border-2 border-gray-300 rounded-xl mb-4">
+            <img id="modal-image" class="w-full h-48 object-contain rounded-lg bg-gray-50" src="" alt="그림">
+        </div>
+
+        <!-- 내용 -->
+        <div class="relative">
+            <p id="modal-text"
+               class="bg-white rounded-xl border-2 border-amber-900 shadow-inner whitespace-pre-wrap kakdugi-notebook"
+               style="height: 160px;"></p>
+
+            <div class="absolute -bottom-4 -right-2 retro-stamp rounded-full p-2 text-center w-24 h-24 flex flex-col items-center justify-center font-black text-xs border-double">
+                <span class="text-lg">💮</span>
+                참잘했어요
             </div>
         </div>
+
     </div>
+</div>
 
     <script>
         // ★ [중요] 내 Supabase 정보 입력 칸
