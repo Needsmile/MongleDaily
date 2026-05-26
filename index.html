@@ -566,6 +566,14 @@
             for (let day = 1; day <= lastDay; day++) {
                 const dayDiv = document.createElement('div');
                 const currentKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+		const today = new Date();
+
+		today.setHours(0,0,0,0);
+
+		const targetDate = new Date(year, month, day);
+
+		const isFutureDate = targetDate > today;
                 
                 dayDiv.style.border = "2px dashed #8b5a2b";
                 dayDiv.style.borderRadius = "0.5rem";
@@ -597,24 +605,31 @@
 
                 dayDiv.appendChild(dayNum);
 
-                if(diaryDatabase[currentKey]) {
-                    const icon = document.createElement('span');
-                    icon.innerText = "💮";
-                    icon.style.alignSelf = "flex-end";
-                    icon.style.fontSize = "1.25rem";
-                    dayDiv.appendChild(icon);
-                    dayDiv.onclick = () => {
+               if(isFutureDate) {
 
-   				 // 이미 작성된 일기 → 팝업 열기
-  				  if(diaryDatabase[currentKey]) {
- 				       openModal(currentKey);
-			    }
+    // 미래 날짜 비활성화
+    dayDiv.style.opacity = "0.35";
+    dayDiv.style.cursor = "not-allowed";
+    dayDiv.style.backgroundColor = "#e5e7eb";
 
-  				  // 빈 날짜 → 작성 페이지 이동
-    				else {
-    			    selectDiaryDate(currentKey);
-   				 }
-		};
+    dayDiv.onclick = () => {
+        alert("📅 미래 날짜의 일기는 아직 쓸 수 없어요!");
+    };
+
+} else if(diaryDatabase[currentKey]) {
+
+    // 작성된 일기 → 팝업
+    dayDiv.onclick = () => {
+        openModal(currentKey);
+    };
+
+} else {
+
+    // 빈 날짜 → 작성 가능
+    dayDiv.onclick = () => {
+        selectDiaryDate(currentKey);
+    };
+}
 
                 } else {
                     dayDiv.onclick = () => selectDiaryDate(currentKey);
