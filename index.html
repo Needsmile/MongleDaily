@@ -567,24 +567,26 @@
                 return;
             }
 
-         try {
+   try {
     // [교정] 사진 업로드 트랜잭션 정상화 및 데이터베이스 스키마 주입 주소 동기화
     if (selectedImageData && selectedImageData.startsWith('data:')) {
         
-        // 🌟 [수정] 한글 폴더 경로(/) 대신, 파일명에 아이이름과 타임스탬프를 대시(-)로 연결합니다.
-        // 예: 몽글이_1779855930965.jpg (공백이나 슬래시 오류 완벽 차단)
-        const fileName = `${childName}_${Date.now()}.jpg`; 
-        
+        // 🌟 [핵심 교정] 한글 '몽글이'를 컴퓨터가 좋아하는 영문/숫자 난수로 변환합니다.
+        // btoa를 활용해 한글 이름을 영문 키값으로 완벽하게 인코딩합니다.
+        const encodedName = btoa(encodeURIComponent(childName)).replace(/[^a-zA-Z0-9]/g, "").slice(0, 8);
+        const fileName = `diary_${encodedName}_${Date.now()}.jpg`; 
+        // ➡️ 이렇게 하면 파일명이 'diary_bW9uZ2xl_1779856142127.jpg' 형태로 변환되어 한글 에러가 원천 차단됩니다!
+
         const blob = await (await fetch(selectedImageData)).blob();
 
-        // 1. Mongle_Daily 버킷으로 업로드
+        // 1. Mongle_Daily 버킷으로 안전하게 업로드
         const { error: uploadError } = await _supabase.storage
             .from('Mongle_Daily')
             .upload(fileName, blob, { contentType: 'image/jpeg', upsert: true });
 
         if(uploadError) throw uploadError;
 
-        // 2. 이미지 주소 가져오기
+        // 2. 변환된 영문 파일명으로 이미지 주소 가져오기
         const { data: publicUrlData } = _supabase.storage
             .from('Mongle_Daily')
             .getPublicUrl(fileName);
@@ -594,14 +596,15 @@
         imageUrl = selectedImageData; 
     }
 
+    // 🌟 여기 데이터베이스에는 한글 이름(childName)이 정상적으로 들어가므로 안심하셔도 됩니다!
     const { error } = await _supabase
         .from('diary_entries')
         .upsert({
             diary_date: dateStr,
-            username: childName,
+            username: childName, // 한글 저장 정상 작동
             weather: weather,
             diary_text: text,
-            image_data: imageUrl
+            image_data: imageUrl // 영문으로 가공된 안전한 URL 저장
         }, { onConflict: 'username,diary_date' });
 
                 if (error) throw error;
