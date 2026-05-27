@@ -548,98 +548,111 @@
             clearCanvas();
         }
 
-        async function saveDiary(silent = false) {
-            let imageUrl = "";
-            const dateStr = selectedDiaryDate;
-            const text = document.getElementById('diary-text').value;
-            const weather = document.getElementById('weather').value;
-
-            if(currentMode === 'draw' && !selectedImageData) {
-                const thumbCanvas = document.createElement('canvas');
-                const thumbCtx = thumbCanvas.getContext('2d');
-                thumbCanvas.width = 300;
-                thumbCanvas.height = (300 / canvas.width) * canvas.height;
-                thumbCtx.drawImage(canvas, 0, 0, thumbCanvas.width, thumbCanvas.height);
-                selectedImageData = thumbCanvas.toDataURL('image/jpeg', 0.5);
-            }
-
-            if(!text && !selectedImageData) {
-                if(!silent) alert('내용이나 그림을 작성해 주세요!');
-                return;
-            }
-
-   try {
-    // [교정] 사진 업로드 트랜잭션 정상화 및 데이터베이스 스키마 주입 주소 동기화
-    if (selectedImageData && selectedImageData.startsWith('data:')) {
-        // 1. Base64 부분만 분리 (data:image/jpeg;base64, 뒤의 데이터만 가져옴)
-    const base64Data = selectedImageData.split(',')[1];
+async function saveDiary(silent = false) {
+    let imageUrl = "";
+    let fileName = ""; // 🌟 [교정 1] 여기서 fileName 변수를 미리 안전하게 선언합니다.
     
-    // 2. Base64를 이진 데이터(Binary)로 변환
-    const byteCharacters = atob(base64Data);
-    const byteNumbers = new Array(byteCharacters.length);
-    for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
-    }
-    const byteArray = new Uint8Array(byteNumbers);
-    
-    // 3. Blob 생성
-    const blob = new Blob([byteArray], { type: 'image/jpeg' });
-      
+    const dateStr = selectedDiaryDate;
+    const text = document.getElementById('diary-text').value;
+    const weather = document.getElementById('weather').value;
 
-        // 1. Mongle_Daily 버킷으로 안전하게 업로드
-        const { error: uploadError } = await _supabase.storage
-            .from('Mongle_Daily')
-            .upload(fileName, blob, { contentType: 'image/jpeg', upsert: true });
-
-        if(uploadError) throw uploadError;
-
-        // 2. 변환된 영문 파일명으로 이미지 주소 가져오기
-        const { data: publicUrlData } = _supabase.storage
-            .from('Mongle_Daily')
-            .getPublicUrl(fileName);
-
-        imageUrl = publicUrlData.publicUrl;
-    } else if (selectedImageData) {
-        imageUrl = selectedImageData; 
+    // 그림 모드일 때 썸네일 생성 로직
+    if(currentMode === 'draw' && !selectedImageData) {
+        const thumbCanvas = document.createElement('canvas');
+        const thumbCtx = thumbCanvas.getContext('2d');
+        thumbCanvas.width = 300;
+        thumbCanvas.height = (300 / canvas.width) * canvas.height;
+        thumbCtx.drawImage(canvas, 0, 0, thumbCanvas.width, thumbCanvas.height);
+        selectedImageData = thumbCanvas.toDataURL('image/jpeg', 0.5);
     }
 
-    // 🌟 여기 데이터베이스에는 한글 이름(childName)이 정상적으로 들어가므로 안심하셔도 됩니다!
-    const { error } = await _supabase
-        .from('diary_entries')
-        .upsert({
-            diary_date: dateStr,
-            username: childName, // 한글 저장 정상 작동
-            weather: weather,
-            diary_text: text,
-            image_data: imageUrl // 영문으로 가공된 안전한 URL 저장
-        }, { onConflict: 'username,diary_date' });
+    // 빈 일기 방지 로직
+    if(!text && !selectedImageData) {
+        if(!silent) alert('내용이나 그림을 작성해 주세요!');
+        return;
+    }
 
-                if (error) throw error;
+    try {
+        // [교정 2] 사진 업로드 트랜잭션 정상화
+        if (selectedImageData && selectedImageData.startsWith('data:')) {
+            
+            // 🌟 [교정 3] 한글 이름(childName)을 안전한 영문/숫자로 치환하여 fileName 생성
+            const safeName = childName.replace(/[^a-zA-Z0-9]/g, ""); 
+            fileName = `diary_${safeName}_${Date.now()}.jpg`;
 
-                // [교정] 새로 생성된 이미지 주소를 로컬 런타임 데이터에 매핑 보장
-                diaryDatabase[dateStr] = {
-                    text: text,
-                    weather: weather,
-                    image: imageUrl,
-                    name: childName
-                };
-
-                if(!silent) {
-                    if(soundEnabled) {
-                        stampSound.currentTime = 0;
-                        stampSound.play().catch(() => {});
-                    }
-                    alert('💮 일기를 잘 썼어요!');
-                }
-                
-                await loadDiariesFromServer();
-                renderTodayForm();
-                renderCalendar();
-                calculateStreak();
-            } catch(err) {
-                alert('🚨 서버 전송 중 에러가 발생했습니다: ' + err.message);
+            // 1. Base64 부분만 분리 (400 에러 방지용 Blob 변환)
+            const base64Data = selectedImageData.split(',')[1];
+            
+            // 2. Base64를 이진 데이터(Binary)로 변환
+            const byteCharacters = atob(base64Data);
+            const byteNumbers = new Array(byteCharacters.length);
+            for (let i = 0; i < byteCharacters.length; i++) {
+                byteNumbers[i] = byteCharacters.charCodeAt(i);
             }
+            const byteArray = new Uint8Array(byteNumbers);
+            
+            // 3. Blob 생성
+            const blob = new Blob([byteArray], { type: 'image/jpeg' });
+            
+            // 4. Mongle_Daily 버킷으로 안전하게 업로드
+            const { error: uploadError } = await _supabase.storage
+                .from('Mongle_Daily')
+                .upload(fileName, blob, { contentType: 'image/jpeg', upsert: true });
+
+            if(uploadError) throw uploadError;
+
+            // 5. 변환된 영문 파일명으로 이미지 퍼블릭 주소 가져오기
+            const { data: publicUrlData } = _supabase.storage
+                .from('Mongle_Daily')
+                .getPublicUrl(fileName);
+
+            imageUrl = publicUrlData.publicUrl;
+            
+        } else if (selectedImageData) {
+            imageUrl = selectedImageData; 
         }
+
+        // 데이터베이스(diary_entries)에 내용과 이미지 주소 저장
+        const { error } = await _supabase
+            .from('diary_entries')
+            .upsert({
+                diary_date: dateStr,
+                username: childName, // DB에는 원래 한글 이름 정상 저장
+                weather: weather,
+                diary_text: text,
+                image_data: imageUrl
+            }, { onConflict: 'username,diary_date' });
+
+        if (error) throw error;
+
+        // 로컬 런타임 데이터에 매핑 보장
+        diaryDatabase[dateStr] = {
+            text: text,
+            weather: weather,
+            image: imageUrl,
+            name: childName
+        };
+
+        // 저장 성공 UI 처리
+        if(!silent) {
+            if(soundEnabled) {
+                stampSound.currentTime = 0;
+                stampSound.play().catch(() => {});
+            }
+            alert('💮 일기를 잘 썼어요!');
+        }
+        
+        // 화면 갱신
+        await loadDiariesFromServer();
+        renderTodayForm();
+        renderCalendar();
+        calculateStreak();
+        
+    } catch(err) {
+        console.error("저장 에러 상세:", err);
+        alert('🚨 서버 전송 중 에러가 발생했습니다: ' + err.message);
+    }
+}
 
         function renderTodayForm() {
             const selected = new Date(selectedDiaryDate);
