@@ -16,6 +16,7 @@
    
     <link rel="apple-touch-icon" sizes="180x180" href="/icon-192.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="그림일기">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -570,14 +571,20 @@
    try {
     // [교정] 사진 업로드 트랜잭션 정상화 및 데이터베이스 스키마 주입 주소 동기화
     if (selectedImageData && selectedImageData.startsWith('data:')) {
-        
-        // 🌟 [핵심 교정] 한글 '몽글이'를 컴퓨터가 좋아하는 영문/숫자 난수로 변환합니다.
-        // btoa를 활용해 한글 이름을 영문 키값으로 완벽하게 인코딩합니다.
-        const encodedName = btoa(encodeURIComponent(childName)).replace(/[^a-zA-Z0-9]/g, "").slice(0, 8);
-        const fileName = `diary_${encodedName}_${Date.now()}.jpg`; 
-        // ➡️ 이렇게 하면 파일명이 'diary_bW9uZ2xl_1779856142127.jpg' 형태로 변환되어 한글 에러가 원천 차단됩니다!
-
-        const blob = await (await fetch(selectedImageData)).blob();
+        // 1. Base64 부분만 분리 (data:image/jpeg;base64, 뒤의 데이터만 가져옴)
+    const base64Data = selectedImageData.split(',')[1];
+    
+    // 2. Base64를 이진 데이터(Binary)로 변환
+    const byteCharacters = atob(base64Data);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    
+    // 3. Blob 생성
+    const blob = new Blob([byteArray], { type: 'image/jpeg' });
+      
 
         // 1. Mongle_Daily 버킷으로 안전하게 업로드
         const { error: uploadError } = await _supabase.storage
