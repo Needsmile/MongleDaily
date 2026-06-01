@@ -1,0 +1,43 @@
+/* 여름방학 그림일기장 고유 스타일 테마 */
+body {
+    font-family: 'Gaegu', 'Malgun Gothic', cursive, sans-serif;
+    background-image: radial-gradient(#d6ccc2 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+/* 옛날 옛적 공책 질감 패널 */
+.retro-paper {
+    background-color: #fcf6bd;
+    border: 6px solid #7f5539;
+    box-shadow: 12px 12px 0px #4a3728;
+}
+
+/* 반으로 접힌 일기장 공책 효과 */
+.retro-book {
+    background-color: #fefae0;
+    border: 8px solid #606c38;
+    background-image: linear-gradient(to right, #fefae0 49%, #dda15e 50%, #fefae0 51%);
+}
+
+/* 공책 줄눈 효과 */
+textarea {
+    background-image: linear-gradient(#ffffff 95%, #e6ccb2 95%);
+    background-size: 100% 2rem;
+    line-height: 2rem !important;
+}
+
+/* 스크롤바 감성 디자인 */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb {
+    background: #b79457;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #9a7b43;
+}
