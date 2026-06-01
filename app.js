@@ -1,18 +1,17 @@
 /**
- * 초등학교 그림일기장 - 프론트엔드 핵심 인프라 구동 스크립트
+ * 초등학교 그림일기장 - 프론트엔드 핵심 인프라 구동 스크립트 (이메일 로그인 완벽 복원)
  */
 const SUPABASE_URL = "https://llkgofkkhuictscodsll.supabase.co"; 
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxsa2dvZmtraHVpY3RzY29kc2xsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3OTA0NDIsImV4cCI6MjA5NTM2NjQ0Mn0.DKymADB196pxaqQnrv6HDW7Ek6xItCWqkrAOOI8xT_s"; 
 
-// 런타임 글로벌 인스턴스 초기화
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let currentDate = new Date();
 let selectedImageData = ""; 
 let currentMode = "photo"; 
 let diaryDatabase = {}; 
-let childName = "몽글이";
-let selectedDiaryDate = getFormattedDate(new Date());
+let childName = ""; // 이메일 주소 토큰 대입 공간
+let selectedDiaryDate = "";
 let isDirty = false;
 let openedModalDate = "";
 let autoSaveTimer = null;
@@ -22,27 +21,64 @@ let communityChannel = null;
 const stampSound = new Audio('stamp.mp3');
 let canvas, ctx, isDrawing = false;
 
-// 1. 유저 인증 처리 및 세션 폭파 방지
-function handleLogin() {
-    const name = document.getElementById('username').value.trim();
-    if(!name) return alert('이름을 입력해 주세요!');
-    childName = name;
-    
-    // 타 사용자의 캐시 잔존 현상 차단을 위해 데이터 초기화 보장
-    diaryDatabase = {};
-    saveUserName(name);
-    localStorage.setItem('lastLoggedInUser', name); 
-    
-    document.getElementById('login-section').style.display = 'none';
-    const mainApp = document.getElementById('main-app');
-    mainApp.style.display = 'flex';
-    mainApp.classList.remove('hidden');
-    
-    selectedDiaryDate = getFormattedDate(new Date());
-    initApp();
+// [복구] 1. Supabase 이메일/비밀번호 연동 로그인 처리기
+async function handleLogin() {
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+
+    if(!email || !password) return alert('이메일과 비밀번호를 모두 입력해 주세요! 👦');
+
+    try {
+        const { data, error } = await _supabase.auth.signInWithPassword({
+            email: email,
+            password: password
+        });
+
+        if (error) throw error;
+
+        // 로그인 성공 시 세션 식별 토큰 캡처
+        childName = data.user.email;
+        diaryDatabase = {};
+        
+        saveUserName(childName);
+        localStorage.setItem('lastLoggedInUser', childName);
+
+        document.getElementById('login-section').style.display = 'none';
+        const mainApp = document.getElementById('main-app');
+        mainApp.style.display = 'flex';
+        mainApp.classList.remove('hidden');
+        
+        selectedDiaryDate = getFormattedDate(new Date());
+        initApp();
+
+    } catch (err) {
+        console.error("로그인 에러:", err.message);
+        alert('🚨 로그인에 실패했습니다: ' + err.message);
+    }
 }
 
-// 2. 어플리케이션 메인 이니셜라이저
+// [추가] 2. Supabase 이메일 계정 생성기
+async function handleSignUp() {
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+
+    if(!email || !password) return alert('가입할 이메일과 비밀번호를 채워주세요!');
+    if(password.length < 6) return alert('비밀번호는 최소 6자리 이상이어야 합니다!');
+
+    try {
+        const { data, error } = await _supabase.auth.signUp({
+            email: email,
+            password: password
+        });
+
+        if (error) throw error;
+        alert('✨ 회원가입 신청이 완료되었습니다! 동일 정보로 로그인을 진행해 주세요.');
+    } catch (err) {
+        alert('🚨 회원가입 실패: ' + err.message);
+    }
+}
+
+// 3. 어플리케이션 메인 이니셜라이저
 async function initApp() {
     setupCanvas();
     const savedSound = localStorage.getItem('soundEnabled');
@@ -51,7 +87,6 @@ async function initApp() {
     }
     document.getElementById('sound-toggle').innerText = soundEnabled ? '🔊' : '🔇';
     
-    // 자동 저장 리스너 디바운싱 바인딩
     document.getElementById('diary-text').addEventListener('input', () => {
         isDirty = true;
         clearTimeout(autoSaveTimer);
@@ -68,7 +103,7 @@ async function initApp() {
     setupRealtimeSync(); 
 }
 
-// 3. 서버 데이터베이스 동기화 수신 엔진
+// 4. 서버 데이터베이스 동기화 수신 엔진
 async function loadDiariesFromServer() {
     try {
         const { data, error } = await _supabase
@@ -93,7 +128,7 @@ async function loadDiariesFromServer() {
     }
 }
 
-// 4. 실시간 커뮤니티 주파수 동기화 채널 제어
+// 5. 실시간 커뮤니티 주파수 동기화 채널 제어
 function setupRealtimeSync() {
     if (communityChannel) {
         _supabase.removeChannel(communityChannel);
@@ -120,7 +155,7 @@ function setupRealtimeSync() {
         .subscribe();
 }
 
-// 5. 커뮤니티 데이터 정밀 파싱 아키텍처
+// 6. 커뮤니티 데이터 정밀 파싱 아키텍처
 async function toggleCommunity() {
     const box = document.getElementById('community-list');
     if (!box.classList.contains('hidden')) {
@@ -159,36 +194,30 @@ async function fetchCommunityData() {
         let timeString = "방학 중";
         if(item.created_at) {
             const d = new Date(item.created_at);
-            const yyyy = d.getFullYear();
-            const mm = String(d.getMonth() + 1).padStart(2, '0');
-            const dd = String(d.getDate()).padStart(2, '0');
-            const hh = String(d.getHours()).padStart(2, '0');
-            const min = String(d.getMinutes()).padStart(2, '0');
-            const ss = String(d.getSeconds()).padStart(2, '0');
-            timeString = `${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`;
+            timeString = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
         }
 
         div.innerHTML = `
             <div class="flex justify-between items-center">
-                <span class="font-bold text-amber-900 text-base">🧒 ${item.username}</span>
-                <span class="text-[11px] text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded font-mono">${timeString}</span>
+                <span class="font-bold text-amber-900 text-xs truncate max-w-[150px]">🧒 ${item.username}</span>
+                <span class="text-[10px] text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded font-mono">${timeString}</span>
             </div>
-            <div class="text-xs text-gray-500 mt-0.5 font-bold">📅 작성일기 지정일: ${item.diary_date} ${item.weather || ''}</div>
+            <div class="text-[11px] text-gray-500 mt-0.5 font-bold">📅 지정일: ${item.diary_date} ${item.weather || ''}</div>
             <div class="mt-1 text-amber-950 text-sm font-semibold whitespace-pre-wrap break-all line-clamp-3">${item.diary_text || "그림만 그렸어요 🎨"}</div>
         `;
         box.appendChild(div);
     });
 }
 
-// 6. 업로드 모드 스위처
+// 7. 업로드 모드 스위처
 function switchUploadMethod(mode) {
     currentMode = mode;
     const photoTab = document.getElementById('tab-photo-btn');
     const drawTab = document.getElementById('tab-draw-btn');
     const photoContainer = document.getElementById('photo-upload-container');
     const drawContainer = document.getElementById('drawing-board-container');
-    const activeClass = "w-1/2 py-2 bg-amber-200 text-black font-bold transition-colors";
-    const inactiveClass = "w-1/2 py-2 bg-amber-50 text-gray-500 font-bold transition-colors";
+    const activeClass = "w-1/2 py-2 bg-amber-200 text-black font-bold transition-colors cursor-pointer";
+    const inactiveClass = "w-1/2 py-2 bg-amber-50 text-gray-500 font-bold transition-colors cursor-pointer";
     
     if(mode === 'photo') {
         photoTab.className = activeClass;
@@ -204,7 +233,7 @@ function switchUploadMethod(mode) {
     }
 }
 
-// 7. 스케치 패드(Canvas) 드로잉 컨트롤러
+// 8. 스케치 패드(Canvas) 드로잉 컨트롤러
 function setupCanvas() {
     canvas = document.getElementById('paintCanvas');
     ctx = canvas.getContext('2d');
@@ -231,12 +260,7 @@ function clearCanvas() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
 
-function startDrawing(e) {
-    isDrawing = true;
-    ctx.beginPath();
-    ctx.moveTo(e.offsetX, e.offsetY);
-}
-
+function startDrawing(e) { isDrawing = true; ctx.beginPath(); ctx.moveTo(e.offsetX, e.offsetY); }
 function draw(e) {
     if (!isDrawing) return;
     ctx.lineWidth = document.getElementById('brush-size').value;
@@ -245,7 +269,6 @@ function draw(e) {
     ctx.lineTo(e.offsetX, e.offsetY);
     ctx.stroke();
 }
-
 function startDrawingTouch(e) {
     isDrawing = true;
     const touch = e.touches[0];
@@ -254,8 +277,6 @@ function startDrawingTouch(e) {
     ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
     e.preventDefault();
 }
-
-// 모바일 웹 터치 이벤트 강제 매핑 우회 엔진
 function drawTouch(e) {
     if (!isDrawing) return;
     const touch = e.touches[0];
@@ -267,10 +288,9 @@ function drawTouch(e) {
     ctx.stroke();
     e.preventDefault();
 }
-
 function stopDrawing() { isDrawing = false; }
 
-// 8. 모바일 고해상도 리사이징 및 Base64 가공 엔진
+// 9. 이미지 가공 엔진
 function previewImage(event) {
     const file = event.target.files[0];
     if (file) {
@@ -310,7 +330,7 @@ function resetMediaSelection() {
     if (canvas) clearCanvas();
 }
 
-// ★ [완벽 복구] 스코프 안전성 확보 및 한글 인코딩 에러를 해결한 핵심 저장 엔진
+// 10. 스코프 트랜잭션 수명 보장 저장 엔진
 async function saveDiary(silent = false) {
     let imageUrl = "";
     let fileName = ""; 
@@ -335,7 +355,6 @@ async function saveDiary(silent = false) {
 
     try {
         if (selectedImageData && selectedImageData.startsWith('data:')) {
-            // 한글 유저명을 순수 문자열 토큰으로 분리 치환
             const safeName = childName.replace(/[^a-zA-Z0-9]/g, "");
             fileName = `diary_${safeName}_${Date.now()}.jpg`;
 
@@ -399,7 +418,7 @@ async function saveDiary(silent = false) {
     }
 }
 
-// 9. UI 렌더링 매핑 모듈
+// 11. UI 렌더링 매핑 모듈
 function renderTodayForm() {
     const selected = new Date(selectedDiaryDate);
     const weekdays = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
@@ -528,11 +547,11 @@ function changeMonth(direction) {
     renderCalendar();
 }
 
-// 10. 도장 상세 보기 모달 윈도우 조작 핸들러
+// 12. 모달 제어반
 function openModal(key) {
     openedModalDate = key;
     const data = diaryDatabase[key];
-    document.getElementById('modal-date').innerText = `📅 검사일: ${key} (${data.name || '어린이'})`;
+    document.getElementById('modal-date').innerText = `📅 검사일: ${key}`;
     document.getElementById('modal-weather').innerText = `날씨: ${data.weather}`;
     document.getElementById('modal-text').innerText = data.text || "";
     
@@ -572,7 +591,7 @@ async function selectDiaryDate(newDate) {
     }, 100);
 }
 
-// 11. 일기장 레코드 삭제 트랜잭션
+// 13. 삭제 모듈
 async function deleteDiary() {
     if(!confirm('정말 이 일기를 삭제할까요?')) return;
     try {
@@ -596,15 +615,18 @@ async function deleteDiary() {
     }
 }
 
-// 12. 세션 데이터 정리 및 복구
+// 14. 세션 로그아웃 귀환 처리
 async function goToHome() {
     if (isDirty) {
         const shouldSave = confirm("작성중인 일기를 저장할까요?");
         if (shouldSave) { await saveDiary(true); }
     }
 
-    const confirmMove = confirm("첫 화면으로 돌아갈까요?");
+    const confirmMove = confirm("로그아웃하고 첫 화면으로 돌아갈까요?");
     if (!confirmMove) return;
+
+    // Supabase 인증 세션 해제 파트 연동
+    await _supabase.auth.signOut();
 
     if(communityChannel) {
         _supabase.removeChannel(communityChannel);
@@ -632,11 +654,11 @@ function renderUserList() {
     container.innerHTML = "";
     users.forEach(user => {
         const btn = document.createElement('button');
-        btn.innerText = `🧒 ${user}`;
-        btn.className = "px-3 py-1 bg-amber-100 hover:bg-amber-200 rounded-lg border border-amber-700 text-lg font-bold";
+        btn.innerText = `🧒 ${user.split('@')[0]}`; // 이메일 앞자리만 가독성 있게 노출
+        btn.className = "px-3 py-1 bg-amber-100 hover:bg-amber-200 rounded-lg border border-amber-700 text-sm font-bold cursor-pointer";
         btn.onclick = () => {
-            document.getElementById('username').value = user;
-            handleLogin();
+            document.getElementById('login-email').value = user;
+            document.getElementById('login-password').focus();
         };
         container.appendChild(btn);
     });
@@ -648,7 +670,7 @@ async function editDiary() {
     document.getElementById('diary-text').focus();
 }
 
-// 13. 잔디심기 연속 작성 스트릭 연산 로직
+// 15. 스트릭 연산 및 오디오
 function calculateStreak() {
     const keys = Object.keys(diaryDatabase).sort();
     let streak = 0;
@@ -671,7 +693,6 @@ function toggleSound() {
     document.getElementById('sound-toggle').innerText = soundEnabled ? '🔊' : '🔇';
 }
 
-// 14. 유튜브 오디오 우회 스트리밍 엔진 컨트롤러
 let bgmOn = false;
 function toggleYouTubeBGM() {
     const iframe = document.getElementById('youtube-player');
@@ -696,11 +717,11 @@ function toggleYouTubeBGM() {
     }
 }
 
-// DOM 인프라 구축 후 자동 복구 세션 웜업 가동
+// DOM 자동 복구 세션 웜업 가동
 document.addEventListener("DOMContentLoaded", () => {
     renderUserList();
     const autoUser = localStorage.getItem('lastLoggedInUser');
     if (autoUser) {
-        document.getElementById('username').value = autoUser;
+        document.getElementById('login-email').value = autoUser;
     }
 });
