@@ -3,1166 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>초등학교 여름방학 그림일기</title>
-    d
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Gamja+Flower&display=swap" rel="stylesheet">
-    
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#2b4436">
-   
-    <link rel="apple-touch-icon" sizes="180x180" href="/icon-192.png">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="그림일기">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>🎨 몽글이 그림일기장 🎨</title>
+    <!-- Tailwind CSS 및 외부 폰트 -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&display=swap" rel="stylesheet">
+    <!-- 레트로 스타일시트 연결 -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Supabase CDN 라이브러리 로드 -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
-    <style>
-        body {
-            font-family: 'Gamja Flower', sans-serif;
-            background-color: #2b4436; 
-        }
-        
-        .retro-paper {
-            background-color: #fcf8ee;
-            border: 8px double #8b5a2b;
-        }
-
-        .kakdugi-notebook {
-            font-size: clamp(18px, 5vw, 26px);
-            line-height: 1.8;
-            letter-spacing: 0.08em;
-            padding: 14px;
-            background-attachment: local;
-            background-image: 
-               linear-gradient(to right, rgba(239, 68, 68, 0.15) 1px, transparent 1px),
-               linear-gradient(to bottom, rgba(239, 68, 68, 0.15) 1px, transparent 1px);
-            background-size: 2.2em 2.2em;
-            background-position: 0.4em 0.2em;
-            font-weight: bold;
-            color: #2d3748;
-            word-break: keep-all;
-            overflow-wrap: break-word;
-        }
-
-        @media (min-width: 1024px) {
-            .kakdugi-notebook {
-                font-size: 24px;
-                line-height: 36px;
-                letter-spacing: 12px;
-                padding: 14px 12px;
-                background-size: 36px 36px;
-                background-position: 8px 4px;
-            }
-        }
-
-        #modal-text.kakdugi-notebook {
-            font-size: clamp(16px, 4vw, 22px) !important;
-            line-height: 1.8 !important;
-            letter-spacing: 0.08em !important;
-            padding: 14px !important;
-            background-size: 2.2em 2.2em !important;
-            background-position: 0.4em 0.2em !important;
-            word-break: keep-all !important;
-            overflow-wrap: break-word !important;
-        }
-        @media (min-width: 1024px) {
-            #modal-text.kakdugi-notebook {
-                font-size: 20px !important;
-                line-height: 36px !important;
-                letter-spacing: 16px !important;
-                padding: 14px 12px !important;
-                background-size: 36px 36px !important;
-                background-position: 8px 4px !important;
-            }
-        }
-
-        .retro-stamp {
-            border: 3px dashed #ef4444;
-            color: #ef4444;
-            transform: rotate(-5deg);
-            text-shadow: 1px 1px 0px rgba(255,255,255,0.8);
-        }
-
-        #weather {
-            font-family: 'Gamja Flower', sans-serif;
-            box-shadow: inset 1px 1px 2px rgba(0,0,0,0.08);
-        }
-
-        #weather:hover {
-            background-color: #fef3c7;
-        }
-
-        #weather option {
-            background-color: #fcf8ee;
-            color: #78350f;
-        }
-    </style>
 </head>
-<body class="p-3 md:p-6 flex flex-col items-center min-h-screen">
+<body class="bg-stone-200 flex justify-center items-center min-h-screen p-4 overflow-x-hidden">
 
-<div id="login-section" class="w-full max-w-md retro-paper rounded-2xl p-8 shadow-2xl text-center my-auto">
-    <div class="border-4 border-double border-amber-800 p-4 rounded-xl bg-yellow-50 bg-opacity-50">
-        <h1 class="text-5xl font-bold text-amber-900 mb-1">여름방학</h1>
-        <h2 class="text-4xl font-bold text-amber-800 mb-6">🎨 그림일기장 🎨</h2>
-        
-        <div class="space-y-3 text-left mb-4">
-            <div>
-                <label class="block text-amber-900 font-bold mb-1">이메일 주소</label>
-                <input type="email" id="auth-email" placeholder="example@email.com" class="w-full p-2 border-2 border-amber-800 bg-white rounded-lg font-bold focus:outline-none">
-            </div>
-            <div>
-                <label class="block text-amber-900 font-bold mb-1">비밀번호</label>
-                <input type="password" id="auth-password" placeholder="******" class="w-full p-2 border-2 border-amber-800 bg-white rounded-lg font-bold focus:outline-none">
-            </div>
-            <div>
-                <label class="block text-amber-900 font-bold mb-1">일기장에 표시될 이름 (회원가입 시 필수)</label>
-                <input type="text" id="username" placeholder="몽글이" class="w-full p-2 border-2 border-amber-800 bg-white rounded-lg font-bold focus:outline-none">
-            </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-2 mb-3">
-            <button onclick="handleLogin()" class="bg-red-600 hover:bg-red-700 text-white text-xl font-bold py-3 rounded-xl shadow-md border-2 border-white">로그인 📖</button>
-            <button onclick="handleSignUp()" class="bg-amber-700 hover:bg-amber-800 text-white text-xl font-bold py-3 rounded-xl shadow-md border-2 border-white">회원가입 🎉</button>
-        </div>
-
-        <!-- 💛 노란색 카카오 로그인 버튼 추가 -->
-        <button onclick="handleKakaoLogin()" class="w-full bg-yellow-300 hover:bg-yellow-400 text-yellow-950 text-xl font-bold py-3 rounded-xl shadow-md border-2 border-amber-800 flex items-center justify-center gap-2">
-            <span>💬</span> 카카오로 시작하기
-        </button>
-        
-        <p class="text-sm text-amber-600 mt-6 font-bold">교육부 검인정 (주)몽글출판사</p>
-        <button id="bgm-btn" onclick="toggleYouTubeBGM()" class="mt-3 w-full bg-red-500 hover:bg-red-600 text-white text-xl font-bold py-2 rounded-xl border-2 border-white">🎵 음악 재생</button>
-    </div>
-</div>
-
-</div>
-
-                <div class="mt-4">
-                    <p class="text-amber-800 font-bold mb-2">최근 친구들</p>
-                    <div id="recent-users" class="flex flex-wrap gap-2 justify-center"></div>
+    <!-- 1단계 인증 포함 로그인 섹션 -->
+    <div id="login-section" class="w-full max-w-md retro-paper rounded-2xl p-8 shadow-2xl text-center my-auto">
+        <div class="border-4 border-double border-amber-800 p-4 rounded-xl bg-yellow-50 bg-opacity-50">
+            <h1 class="text-5xl font-bold text-amber-900 mb-1">여름방학</h1>
+            <h2 class="text-4xl font-bold text-amber-800 mb-6">🎨 그림일기장 🎨</h2>
+            
+            <div class="space-y-3 text-left mb-4">
+                <div>
+                    <label class="block text-amber-900 font-bold mb-1">이메일 주소</label>
+                    <input type="email" id="auth-email" placeholder="example@email.com" class="w-full p-2 border-2 border-amber-800 bg-white rounded-lg font-bold focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-amber-900 font-bold mb-1">비밀번호</label>
+                    <input type="password" id="auth-password" placeholder="******" class="w-full p-2 border-2 border-amber-800 bg-white rounded-lg font-bold focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-amber-900 font-bold mb-1">일기장에 표시될 이름 (회원가입 시 필수)</label>
+                    <input type="text" id="username" placeholder="몽글이" class="w-full p-2 border-2 border-amber-800 bg-white rounded-lg font-bold focus:outline-none">
                 </div>
             </div>
-            <div id="streak-box" class="mt-4 text-lg font-bold text-red-700"></div>
+
+            <div class="grid grid-cols-2 gap-2 mb-3">
+                <button onclick="handleLogin()" class="bg-red-600 hover:bg-red-700 text-white text-xl font-bold py-3 rounded-xl shadow-md border-2 border-white cursor-pointer">로그인 📖</button>
+                <button onclick="handleSignUp()" class="bg-amber-700 hover:bg-amber-800 text-white text-xl font-bold py-3 rounded-xl shadow-md border-2 border-white cursor-pointer">회원가입 🎉</button>
+            </div>
+
+            <button onclick="handleKakaoLogin()" class="w-full bg-yellow-300 hover:bg-yellow-400 text-yellow-950 text-xl font-bold py-3 rounded-xl shadow-md border-2 border-amber-800 flex items-center justify-center gap-2 cursor-pointer">
+                <span>💬</span> 카카오로 시작하기
+            </button>
+            
             <p class="text-sm text-amber-600 mt-6 font-bold">교육부 검인정 (주)몽글출판사</p>
-            <button id="install-btn" class="hidden w-full bg-green-600 hover:bg-green-700 text-white text-xl font-bold py-2 rounded-xl border-2 border-white mt-2">📲 앱 설치하기</button>
-            <button id="bgm-btn" onclick="toggleYouTubeBGM()" class="mt-3 w-full bg-red-500 hover:bg-red-600 text-white text-xl font-bold py-2 rounded-xl border-2 border-white">🎵 음악 재생</button>
+            <button id="bgm-btn" onclick="toggleYouTubeBGM()" class="mt-3 w-full bg-red-500 hover:bg-red-600 text-white text-xl font-bold py-2 rounded-xl border-2 border-white cursor-pointer">🎵 음악 재생</button>
         </div>
     </div>
 
-    <div id="main-app" class="w-full max-w-6xl hidden flex lg:flex-row gap-6 items-stretch overflow-x-auto snap-x snap-mandatory">
-        
-        <div class="w-full min-w-full lg:min-w-0 lg:w-1/2 retro-paper rounded-3xl p-5 shadow-2xl flex flex-col">
-            <div class="flex items-center border-2 border-amber-900 bg-amber-100 bg-opacity-50 mb-4 rounded-lg overflow-hidden text-amber-900 font-bold">
-                <button onclick="goToHome()" class="px-3 py-2 bg-amber-200 hover:bg-amber-300 border-r-2 border-amber-900 text-lg font-bold whitespace-nowrap">🏠</button>
-                <div id="current-date-display" class="flex-1 min-w-0 px-2 py-2 text-center whitespace-nowrap text-xs sm:text-sm md:text-lg">2026-05-27</div>
-                <div class="flex items-center justify-center px-1 py-1 bg-white border-l-2 border-amber-900" style="min-width:92px;">
-                    <span class="mr-1 text-[10px] sm:text-xs whitespace-nowrap">날씨:</span>
-                    <select id="weather" class="bg-amber-200 hover:bg-amber-300 text-amber-900 text-sm sm:text-base md:text-lg font-bold border-2 border-amber-800 rounded-md px-1 py-0.5 focus:outline-none cursor-pointer appearance-none transition-colors">
-                        <option value="☀️">☀️ 맑음</option>
-                        <option value="☁️">☁️ 흐림</option>
-                        <option value="☔">☔ 비옴</option>
-                        <option value="⚡">⚡ 천둥</option>
-                        <option value="☃️">☃️ 눈옴</option>
+    <!-- 메인 일기장 앱 (로그인 전에는 hidden) -->
+    <div id="main-app" class="hidden w-full max-w-6xl retro-book shadow-2xl rounded-3xl p-6 flex-col md:flex-row gap-6 relative">
+        <!-- [왼쪽 페이지: 일기 작성 및 보기] -->
+        <div class="w-full md:w-1/2 flex flex-col justify-between border-b-4 md:border-b-0 md:border-r-4 border-dashed border-amber-800 pb-6 md:pb-0 md:pr-6">
+            <div>
+                <div class="flex justify-between items-center mb-4 bg-amber-100 p-2 rounded-xl border-2 border-amber-800">
+                    <div class="text-2xl font-bold text-amber-900" id="current-user-display">🧑‍🎨 작성자: 로딩 중...</div>
+                    <button onclick="handleLogout()" class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg text-sm border-2 border-white cursor-pointer">로그아웃</button>
+                </div>
+
+                <div class="flex flex-wrap gap-2 items-center mb-4 text-amber-950 font-bold text-xl">
+                    <input type="date" id="diary-date" class="border-2 border-amber-800 p-1.5 bg-white rounded-lg focus:outline-none">
+                    <select id="diary-weather" class="border-2 border-amber-800 p-1.5 bg-white rounded-lg focus:outline-none">
+                        <option value="☀️ 맑음">☀️ 맑음</option>
+                        <option value="☁️ 흐림">☁️ 흐림</option>
+                        <option value="🌧️ 비">🌧️ 비</option>
+                        <option value="☃️ 눈">☃️ 눈</option>
                     </select>
-                    <button id="sound-toggle" onclick="toggleSound()" class="ml-1 px-2 py-1 bg-amber-200 hover:bg-amber-300 border-2 border-amber-800 rounded-md text-sm font-bold">🔊</button>
                 </div>
-            </div>
 
-            <div class="flex w-full mb-2 border-2 border-amber-800 rounded-lg overflow-hidden text-lg font-bold">
-                <button id="tab-photo-btn" onclick="switchUploadMethod('photo')" class="w-1/2 py-2 bg-amber-200 text-black font-bold transition-colors">📸 사진 첨부하기</button>
-                <button id="tab-draw-btn" onclick="switchUploadMethod('draw')" class="w-1/2 py-2 bg-amber-50 text-gray-500 font-bold transition-colors">✏️ 직접 그림그리기</button>
-            </div>
-
-            <div class="border-4 border-solid border-amber-900 bg-white h-64 flex flex-col items-center justify-center relative overflow-hidden mb-4 shadow-inner rounded-md">
-                <div id="photo-upload-container" class="absolute inset-0 flex flex-col items-center justify-center">
-                    <input type="file" id="image-input" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" onchange="previewImage(event)">
-                    <div id="upload-placeholder" class="text-center text-gray-400 p-4">
-                        <span class="text-5xl block mb-1">📷</span>
-                        <p class="text-lg font-bold">여기를 눌러 폰카 사진이나<br>앨범 이미지를 올려주세요</p>
+                <!-- 그림 영역 -->
+                <div class="w-full aspect-[4/3] border-4 border-amber-800 bg-white rounded-xl relative shadow-inner overflow-hidden flex flex-col items-center justify-center group">
+                    <img id="diary-image" class="w-full h-full object-cover hidden" alt="일기 그림">
+                    <div id="image-placeholder" class="text-center p-4">
+                        <span class="text-6xl text-amber-700 block mb-2">🎨</span>
+                        <p class="text-amber-900 font-bold text-lg">오늘 하루를 표현할<br>사진을 업로드해 주세요!</p>
                     </div>
+                    <input type="file" id="image-input" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer">
+                    <button id="remove-img-btn" onclick="removeImage(event)" class="absolute top-2 right-2 bg-red-600 text-white font-bold p-1.5 rounded-full shadow border-2 border-white hidden hover:bg-red-700 cursor-pointer">❌</button>
                 </div>
 
-                <div id="drawing-board-container" class="absolute inset-0 hidden flex flex-col bg-white">
-                    <div class="flex items-center justify-between p-1 bg-amber-50 border-b border-amber-900 z-10">
-                        <div class="flex space-x-1 items-center">
-                            <input type="color" id="brush-color" value="#000000" class="w-8 h-6 border cursor-pointer">
-                            <select id="brush-size" class="text-sm font-bold border border-gray-400 rounded">
-                                <option value="3">✏️ 가늘게</option>
-                                <option value="6" selected>🖌️ 보통</option>
-                                <option value="12">🖍️ 두껍게</option>
-                            </select>
-                        </div>
-                        <button onclick="clearCanvas()" class="px-2 py-0.5 bg-red-100 hover:bg-red-200 text-red-700 border border-red-400 rounded text-sm font-bold">🧼 전부 지우기</button>
-                    </div>
-                    <canvas id="paintCanvas" class="w-full flex-grow cursor-crosshair touch-none"></canvas>
+                <!-- 글쓰기 구역 -->
+                <div class="mt-4">
+                    <textarea id="diary-text" rows="5" placeholder="오늘 있었던 일을 정성스럽게 적어보아요..." class="w-full p-4 border-4 border-amber-800 bg-white rounded-xl text-amber-950 font-bold text-xl leading-relaxed resize-none focus:outline-none placeholder-amber-700 placeholder-opacity-50 shadow-inner"></textarea>
                 </div>
-
-                <img id="image-preview" class="w-full h-full object-contain hidden pointer-events-none z-20 bg-white" alt="최종그림">
-                <button id="reset-media-btn" onclick="resetMediaSelection()" class="absolute bottom-2 right-2 hidden z-30 px-3 py-1 bg-gray-800 text-white text-sm font-bold rounded-lg opacity-80 hover:opacity-100">다시 고르기 ↺</button>
             </div>
 
-            <textarea id="diary-text" rows="5" placeholder="오늘 하루는 무엇을 하고 놀았는지 깍두기 칸에 차근차근 적어봅시다." class="w-full bg-white border-2 border-amber-900 rounded-lg shadow-inner focus:outline-none resize-none kakdugi-notebook flex-grow" style="height: 200px;"></textarea>
-            <button onclick="saveDiary()" class="mt-4 bg-red-600 hover:bg-red-700 text-white text-2xl font-bold py-2 rounded-xl shadow-lg transition duration-200 border-2 border-white tracking-wider">💮 참 잘했어요 도장 찍기</button>
+            <button onclick="saveDiary()" class="w-full mt-4 bg-amber-800 hover:bg-amber-900 text-white text-2xl font-bold py-3 rounded-2xl border-4 border-amber-950 shadow-lg transition-transform active:scale-95 cursor-pointer">참 잘했어요 도장 꾹! 💮</button>
         </div>
 
-        <div class="w-full lg:w-1/2 min-w-full lg:min-w-0 snap-center retro-paper rounded-3xl p-5 shadow-2xl flex flex-col justify-between bg-yellow-50 bg-opacity-30">
+        <!-- [오른쪽 페이지: 달력 및 단짝 친구] -->
+        <div class="w-full md:w-1/2 flex flex-col justify-between md:pl-2">
             <div>
-                <div class="flex justify-between items-center border-b-4 border-amber-900 pb-2 mb-4">
-                    <button onclick="changeMonth(-1)" class="text-2xl font-bold text-amber-900 hover:scale-120 px-2">◀</button>
-                    <h2 class="text-xl sm:text-2xl md:text-3xl font-bold text-amber-900 tracking-normal sm:tracking-widest whitespace-nowrap text-center flex-grow" id="calendar-month-year">2026년 5월 월간 도장표</h2>
-                    <button onclick="changeMonth(1)" class="text-2xl font-bold text-amber-900 hover:scale-120 px-2">▶</button>
+                <!-- 달력 헤더 -->
+                <div class="flex justify-between items-center mb-4">
+                    <button onclick="changeMonth(-1)" class="text-2xl font-bold text-amber-950 px-2 cursor-pointer">◀</button>
+                    <h2 id="calendar-month-year" class="text-3xl font-bold text-amber-900">2026년 06월</h2>
+                    <button onclick="changeMonth(1)" class="text-2xl font-bold text-amber-950 px-2 cursor-pointer">▶</button>
                 </div>
 
-                <div class="grid grid-cols-7 text-center font-bold text-lg mb-2 text-amber-950 bg-amber-200 bg-opacity-50 py-1 rounded">
+                <!-- 요일 표시 -->
+                <div class="grid grid-cols-7 gap-1 text-center font-bold text-amber-900 border-b-2 border-amber-800 pb-1 mb-2 text-lg">
                     <div class="text-red-600">일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div class="text-blue-600">토</div>
                 </div>
-                <div class="grid grid-cols-7 gap-2" id="calendar-days"></div>
-            </div>
 
-            <div class="mt-4">
-                <button onclick="toggleCommunity()" class="w-full bg-amber-200 hover:bg-amber-300 border-2 border-amber-800 rounded-xl py-2 text-xl font-bold text-amber-900">🌎 친구들 일기 구경하기</button>
-                <div id="community-list" class="hidden mt-3 bg-white border-2 border-amber-800 rounded-xl p-3 max-h-60 overflow-y-auto space-y-3"></div>
+                <!-- 달력 날짜 그리드 -->
+                <div id="calendar-days" class="grid grid-cols-7 gap-1 text-center font-bold"></div>
+                
+                <!-- 고도화 예정인 단짝 친구 및 커뮤니티 섹션 포스트 -->
+                <div id="friend-section-container"></div>
             </div>
-            <div class="mt-4 p-3 bg-white border-2 border-amber-800 rounded-xl text-center font-bold text-amber-900 text-sm">
-                🎉 축하합니다! 이제 작성하신 일기는 데이터베이스에 안전하게 저장됩니다.
+            
+            <div class="text-right text-amber-800 font-bold text-sm mt-4 border-t-2 border-amber-800 pt-2 border-dashed">
+                제 40대 몽글이 그림일기 전용 내부 규격
             </div>
         </div>
+        
+        <!-- 유튜브 배경음악 플레이어 (숨김 처리) -->
+        <div id="youtube-player" class="hidden"></div>
     </div>
 
-    <div id="diary-modal" class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center p-4 z-50">
-        <div class="retro-paper rounded-3xl p-6 max-w-md w-full relative">
-            <div class="flex justify-between items-center mb-4 gap-2">
-                <div class="flex gap-2">
-                    <button onclick="editDiary()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg font-bold text-sm">수정</button>
-                    <button onclick="deleteDiary()" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg font-bold text-sm">삭제</button>
-                </div>
-                <button onclick="closeModal()" class="text-4xl leading-none font-bold text-amber-900 hover:scale-110 transition-transform">×</button>
-            </div>
-
-            <div class="flex justify-between items-center border-b-2 border-amber-900 pb-2 mb-4 font-bold text-amber-950 text-xl">
-                <h3 id="modal-date">날짜</h3>
-                <span id="modal-weather" class="text-2xl">☀️</span>
-            </div>
-
-            <div class="bg-white p-2 border-2 border-gray-300 rounded-xl mb-4">
-                <img id="modal-image" class="w-full h-48 object-contain rounded-lg bg-gray-50" src="" alt="그림">
-            </div>
-
-            <div class="relative">
-                <p id="modal-text" class="bg-white rounded-xl border-2 border-amber-900 shadow-inner whitespace-pre-wrap kakdugi-notebook" style="height: 160px;"></p>
-                <div class="absolute -bottom-4 -right-2 retro-stamp rounded-full p-2 text-center w-24 h-24 flex flex-col items-center justify-center font-black text-xs border-double">
-                    <span class="text-lg">💮</span>참잘했어요
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="youtube-bgm" style="position:fixed; bottom:0; left:0; width:1px; height:1px; opacity:0.01; pointer-events:none; z-index:-999;">
-        <iframe id="youtube-player" width="1" height="1" src="" frameborder="0" allow="autoplay; encrypted-media"></iframe>
-    </div>
-
-    <script>
-        const SUPABASE_URL = "https://llkgofkkhuictscodsll.supabase.co"; 
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxsa2dvZmtraHVpY3RzY29kc2xsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3OTA0NDIsImV4cCI6MjA5NTM2NjQ0Mn0.DKymADB196pxaqQnrv6HDW7Ek6xItCWqkrAOOI8xT_s"; 
-
-        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        let currentDate = new Date();
-        let selectedImageData = ""; 
-        let currentMode = "photo"; 
-        let diaryDatabase = {}; 
-        let childName = "몽글이";
-        let selectedDiaryDate = getFormattedDate(new Date());
-        let isDirty = false;
-        let openedModalDate = "";
-        let autoSaveTimer = null;
-        let soundEnabled = true;
-        let communityChannel = null; // 실시간 동기화 채널 구조체
-
-        const stampSound = new Audio('stamp.mp3');
-        let canvas, ctx, isDrawing = false;
-
-        function handleLogin() {
-            const name = document.getElementById('username').value.trim();
-            if(!name) return alert('이름을 입력해 주세요!');
-            childName = name;
-            
-            // [교정] 타 사용자의 캐시 잔존 현상 차단을 위해 로그인 즉시 이전 데이터 완전 폭파
-            diaryDatabase = {}; 
-
-            saveUserName(name);
-            localStorage.setItem('lastLoggedInUser', name); // 보안상 이슈 보류 처리용 세션 저장
-            
-            document.getElementById('login-section').style.display = 'none';
-            const mainApp = document.getElementById('main-app');
-            mainApp.style.display = 'flex';
-            mainApp.classList.remove('hidden');
-            
-            // [교정] 홈에서 다시 진입하거나 로그인 시 항상 초기 포커스를 'Today(오늘)'로 선언
-            selectedDiaryDate = getFormattedDate(new Date());
-
-            initApp();
-        }
-
-		async function handleKakaoLogin() {
-        const { data, error } = await _supabase.auth.signInWithOAuth({
-            provider: 'kakao',
-            options: {
-                // 이메일 인증 때 세팅했던 회원님의 진짜 사이트 주소로 돌아오도록 설정합니다.
-                redirectTo: window.location.origin 
-            }
-        });
-
-        if (error) {
-            alert('카카오 로그인 실패: ' + error.message);
-        }
-    }
-
-        async function initApp() {
-            setupCanvas();
-            const savedSound = localStorage.getItem('soundEnabled');
-            if(savedSound !== null) {
-                soundEnabled = savedSound === 'true';
-            }
-            document.getElementById('sound-toggle').innerText = soundEnabled ? '🔊' : '🔇';
-
-            document.getElementById('diary-text').addEventListener('input', () => {
-                isDirty = true;
-                clearTimeout(autoSaveTimer);
-                if(document.getElementById('diary-text').value.length > 5) {
-                    autoSaveTimer = setTimeout(() => { saveDiary(true); }, 3000);
-                }
-            });
-
-            document.getElementById('weather').addEventListener('change', () => { isDirty = true; });
-
-            await loadDiariesFromServer();
-            renderTodayForm();
-            renderCalendar();
-            calculateStreak();
-            setupRealtimeSync(); // 실시간 구독 채널 결합
-        }
-
-        async function loadDiariesFromServer() {
-            try {
-                const { data, error } = await _supabase
-                    .from('diary_entries')
-                    .select('*')
-                    .eq('username', childName);
-                
-                if (error) throw error;
-                
-                diaryDatabase = {};
-                if(data) {
-                    data.forEach(item => {
-                        diaryDatabase[item.diary_date] = {
-                            text: item.diary_text,
-                            weather: item.weather,
-                            image: item.image_data,
-                            name: item.username
-                        };
-                    });
-                }
-            } catch (err) {
-                console.error("서버 데이터 로드 실패:", err.message);
-            }
-        }
-
-        // [교정] 친구들 일기 실시간 스트리밍 동기화 채널 설정
-        function setupRealtimeSync() {
-            if (communityChannel) {
-                _supabase.removeChannel(communityChannel);
-            }
-
-            communityChannel = _supabase
-                .channel('schema-db-changes')
-                .on(
-                    'postgres_changes',
-                    { event: '*', pattern: 'public', table: 'diary_entries' },
-                    (payload) => {
-                        // 실시간 변경 발생 시 커뮤니티 리스트가 열려있다면 즉각 리렌더링
-                        const box = document.getElementById('community-list');
-                        if (box && !box.classList.contains('hidden')) {
-                            fetchCommunityData();
-                        }
-                        // 만약 현재 로그인한 유저의 데이터가 바뀌었다면 동기화 후 달력 갱신
-                        if (payload.new && payload.new.username === childName) {
-                            loadDiariesFromServer().then(() => {
-                                renderCalendar();
-                                calculateStreak();
-                            });
-                        }
-                    }
-                )
-                .subscribe();
-        }
-
-        async function toggleCommunity() {
-            const box = document.getElementById('community-list');
-            if (!box.classList.contains('hidden')) {
-                box.classList.add('hidden');
-                return;
-            }
-            box.classList.remove('hidden');
-            await fetchCommunityData();
-        }
-
-        // [교정] 날짜 및 초단위 시간까지 정밀 파싱하여 커뮤니티 목록을 갱신하는 비동기 함수
-        async function fetchCommunityData() {
-            const box = document.getElementById('community-list');
-            box.innerHTML = "<div class='text-center p-2 text-gray-400 font-bold animate-pulse'>⚡ 실시간 전송 주파수 수신 중...</div>";
-
-            const { data, error } = await _supabase
-                .from('diary_entries')
-                .select('*')
-                .order('created_at', { ascending: false })
-                .limit(20);
-
-            if (error) {
-                box.innerHTML = "<div class='text-red-500 font-bold text-center'>불러오기 실패</div>";
-                return;
-            }
-
-            box.innerHTML = "";
-            if(data.length === 0) {
-                box.innerHTML = "<div class='text-gray-400 text-center py-4'>아직 작성된 친구들 일기가 없어요.</div>";
-                return;
-            }
-
-            data.forEach(item => {
-                const div = document.createElement('div');
-                div.className = "border-b border-amber-200 pb-2 last:border-0 hover:bg-amber-50 p-1 rounded transition-colors";
-                
-                // Supabase Timestamp 기재 처리 (날짜 & 시간 분리 추출)
-                let timeString = "방학 중";
-                if(item.created_at) {
-                    const d = new Date(item.created_at);
-                    const yyyy = d.getFullYear();
-                    const mm = String(d.getMonth() + 1).padStart(2, '0');
-                    const dd = String(d.getDate()).padStart(2, '0');
-                    const hh = String(d.getHours()).padStart(2, '0');
-                    const min = String(d.getMinutes()).padStart(2, '0');
-                    const ss = String(d.getSeconds()).padStart(2, '0');
-                    timeString = `${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`;
-                }
-
-                div.innerHTML = `
-                    <div class="flex justify-between items-center">
-                        <span class="font-bold text-amber-900 text-base">🧒 ${item.username}</span>
-                        <span class="text-[11px] text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded font-mono">${timeString}</span>
-                    </div>
-                    <div class="text-xs text-gray-500 mt-0.5 font-bold">📅 작성일기 지정일: ${item.diary_date} ${item.weather || ''}</div>
-                    <div class="mt-1 text-amber-950 text-sm font-semibold whitespace-pre-wrap break-all line-clamp-3">${item.diary_text || "그림만 그렸어요 🎨"}</div>
-                `;
-                box.appendChild(div);
-            });
-        }
-
-        function switchUploadMethod(mode) {
-            currentMode = mode;
-            const photoTab = document.getElementById('tab-photo-btn');
-            const drawTab = document.getElementById('tab-draw-btn');
-            const photoContainer = document.getElementById('photo-upload-container');
-            const drawContainer = document.getElementById('drawing-board-container');
-
-            const activeClass = "w-1/2 py-2 bg-amber-200 text-black font-bold transition-colors";
-            const inactiveClass = "w-1/2 py-2 bg-amber-50 text-gray-500 font-bold transition-colors";
-
-            if(mode === 'photo') {
-                photoTab.className = activeClass;
-                drawTab.className = inactiveClass;
-                photoContainer.classList.remove('hidden');
-                drawContainer.classList.add('hidden');
-            } else {
-                drawTab.className = activeClass;
-                photoTab.className = inactiveClass;
-                drawContainer.classList.remove('hidden');
-                photoContainer.classList.add('hidden');
-                resizeCanvas();
-            }
-        }
-
-        function setupCanvas() {
-            canvas = document.getElementById('paintCanvas');
-            ctx = canvas.getContext('2d');
-            
-            canvas.addEventListener('mousedown', startDrawing);
-            canvas.addEventListener('mousemove', draw);
-            canvas.addEventListener('mouseup', stopDrawing);
-            canvas.addEventListener('mouseout', stopDrawing);
-
-            canvas.addEventListener('touchstart', startDrawingTouch);
-            canvas.addEventListener('touchmove', drawTouch);
-            canvas.addEventListener('touchend', stopDrawing);
-        }
-
-        function resizeCanvas() {
-            canvas.width = canvas.parentElement.clientWidth;
-            canvas.height = canvas.parentElement.clientHeight - 34;
-            ctx.fillStyle = "#ffffff";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-        }
-
-        function clearCanvas() {
-            ctx.fillStyle = "#ffffff";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-        }
-
-        function startDrawing(e) {
-            isDrawing = true;
-            ctx.beginPath();
-            ctx.moveTo(e.offsetX, e.offsetY);
-        }
-
-        function draw(e) {
-            if (!isDrawing) return;
-            ctx.lineWidth = document.getElementById('brush-size').value;
-            ctx.lineCap = 'round';
-            ctx.strokeStyle = document.getElementById('brush-color').value;
-            ctx.lineTo(e.offsetX, e.offsetY);
-            ctx.stroke();
-        }
-
-        function startDrawingTouch(e) {
-            isDrawing = true;
-            const touch = e.touches[0];
-            const rect = canvas.getBoundingClientRect();
-            ctx.beginPath();
-            ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
-            e.preventDefault();
-        }
-
-        function drawTouch(e) {
-            if (!isDrawing) return;
-            const touch = e.touches[0];
-            const rect = canvas.getBoundingClientRect();
-            ctx.lineWidth = document.getElementById('brush-size').value;
-            ctx.lineCap = 'round';
-            ctx.strokeStyle = document.getElementById('brush-color').value;
-            ctx.lineTo(touch.clientX - rect.left, touch.clientY - rect.top);
-            ctx.stroke();
-            e.preventDefault();
-        }
-
-        function stopDrawing() { isDrawing = false; }
-
-        function previewImage(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const img = new Image();
-                    img.src = e.target.result;
-                    img.onload = function() {
-                        const compCanvas = document.createElement('canvas');
-                        const compCtx = compCanvas.getContext('2d');
-                        const max_width = 500; // 고해상도 지원을 위해 제한 상향 조정
-                        const scale = max_width / img.width;
-                        compCanvas.width = max_width;
-                        compCanvas.height = img.height * scale;
-                        compCtx.drawImage(img, 0, 0, compCanvas.width, compCanvas.height);
-                        
-                        selectedImageData = compCanvas.toDataURL('image/jpeg', 0.7); 
-                        showFinalPreview(selectedImageData);
-                    }
-                }
-                reader.readAsDataURL(file);
-            }
-        }
-
-        function showFinalPreview(dataUrl) {
-            const preview = document.getElementById('image-preview');
-            preview.src = dataUrl;
-            preview.classList.remove('hidden');
-            document.getElementById('reset-media-btn').classList.remove('hidden');
-        }
-
-        function resetMediaSelection() {
-            selectedImageData = "";
-            document.getElementById('image-preview').classList.add('hidden');
-            document.getElementById('reset-media-btn').classList.add('hidden');
-            document.getElementById('image-input').value = "";
-            clearCanvas();
-        }
-
-async function saveDiary(silent = false) {
-    let imageUrl = "";
-    let fileName = ""; // 🌟 [교정 1] 여기서 fileName 변수를 미리 안전하게 선언합니다.
-    
-    const dateStr = selectedDiaryDate;
-    const text = document.getElementById('diary-text').value;
-    const weather = document.getElementById('weather').value;
-
-    // 그림 모드일 때 썸네일 생성 로직
-    if(currentMode === 'draw' && !selectedImageData) {
-        const thumbCanvas = document.createElement('canvas');
-        const thumbCtx = thumbCanvas.getContext('2d');
-        thumbCanvas.width = 300;
-        thumbCanvas.height = (300 / canvas.width) * canvas.height;
-        thumbCtx.drawImage(canvas, 0, 0, thumbCanvas.width, thumbCanvas.height);
-        selectedImageData = thumbCanvas.toDataURL('image/jpeg', 0.5);
-    }
-
-    // 빈 일기 방지 로직
-    if(!text && !selectedImageData) {
-        if(!silent) alert('내용이나 그림을 작성해 주세요!');
-        return;
-    }
-
-    try {
-        // [교정 2] 사진 업로드 트랜잭션 정상화
-        if (selectedImageData && selectedImageData.startsWith('data:')) {
-            
-            // 🌟 [교정 3] 한글 이름(childName)을 안전한 영문/숫자로 치환하여 fileName 생성
-            const safeName = childName.replace(/[^a-zA-Z0-9]/g, ""); 
-            fileName = `diary_${safeName}_${Date.now()}.jpg`;
-
-            // 1. Base64 부분만 분리 (400 에러 방지용 Blob 변환)
-            const base64Data = selectedImageData.split(',')[1];
-            
-            // 2. Base64를 이진 데이터(Binary)로 변환
-            const byteCharacters = atob(base64Data);
-            const byteNumbers = new Array(byteCharacters.length);
-            for (let i = 0; i < byteCharacters.length; i++) {
-                byteNumbers[i] = byteCharacters.charCodeAt(i);
-            }
-            const byteArray = new Uint8Array(byteNumbers);
-            
-            // 3. Blob 생성
-            const blob = new Blob([byteArray], { type: 'image/jpeg' });
-            
-            // 4. Mongle_Daily 버킷으로 안전하게 업로드
-            const { error: uploadError } = await _supabase.storage
-                .from('Mongle_Daily')
-                .upload(fileName, blob, { contentType: 'image/jpeg', upsert: true });
-
-            if(uploadError) throw uploadError;
-
-            // 5. 변환된 영문 파일명으로 이미지 퍼블릭 주소 가져오기
-            const { data: publicUrlData } = _supabase.storage
-                .from('Mongle_Daily')
-                .getPublicUrl(fileName);
-
-            imageUrl = publicUrlData.publicUrl;
-            
-        } else if (selectedImageData) {
-            imageUrl = selectedImageData; 
-        }
-
-        // 데이터베이스(diary_entries)에 내용과 이미지 주소 저장
- const {
-    data: { user }
-} = await _supabase.auth.getUser();
-
-const { error } = await _supabase
-    .from('diary_entries')
-    .upsert({
-        diary_date: dateStr,
-
-        username: childName,
-
-        user_id: user.id,
-
-        weather: weather,
-        diary_text: text,
-        image_data: imageUrl
-
-    }, { onConflict: 'username,diary_date' });
-
-        if (error) throw error;
-
-        // 로컬 런타임 데이터에 매핑 보장
-        diaryDatabase[dateStr] = {
-            text: text,
-            weather: weather,
-            image: imageUrl,
-            name: childName
-        };
-
-        // 저장 성공 UI 처리
-        if(!silent) {
-            if(soundEnabled) {
-                stampSound.currentTime = 0;
-                stampSound.play().catch(() => {});
-            }
-            alert('💮 일기를 잘 썼어요!');
-        }
-        
-        // 화면 갱신
-        await loadDiariesFromServer();
-        renderTodayForm();
-        renderCalendar();
-        calculateStreak();
-        
-    } catch(err) {
-        console.error("저장 에러 상세:", err);
-        alert('🚨 서버 전송 중 에러가 발생했습니다: ' + err.message);
-    }
-}
-
-        function renderTodayForm() {
-            const selected = new Date(selectedDiaryDate);
-            const weekdays = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
-
-            document.getElementById('current-date-display').innerText = `${selectedDiaryDate} (${weekdays[selected.getDay()]})`;
-
-            const data = diaryDatabase[selectedDiaryDate];
-            document.getElementById('diary-text').value = "";
-            document.getElementById('weather').value = "☀️";
-            resetMediaSelection();
-
-            if(data) {
-                document.getElementById('diary-text').value = data.text || "";
-                document.getElementById('weather').value = data.weather || "☀️";
-                if(data.image) {
-                    selectedImageData = data.image;
-                    showFinalPreview(selectedImageData);
-                }
-            }
-            isDirty = false;
-        }
-
-        function renderCalendar() {
-            const year = currentDate.getFullYear();
-            const month = currentDate.getMonth();
-
-            document.getElementById('calendar-month-year').innerText = `${year}년 ${month + 1}월 방학 검사표`;
-
-            const firstDayIndex = new Date(year, month, 1).getDay();
-            const lastDay = new Date(year, month + 1, 0).getDate();
-            const calendarDays = document.getElementById('calendar-days');
-            calendarDays.innerHTML = "";
-
-            for (let i = 0; i < firstDayIndex; i++) {
-                calendarDays.appendChild(document.createElement('div'));
-            }
-
-            for (let day = 1; day <= lastDay; day++) {
-                const dayDiv = document.createElement('div');
-                const currentKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                const targetDate = new Date(year, month, day);
-                const isFutureDate = targetDate > today;
-
-                dayDiv.style.border = "2px dashed #8b5a2b";
-                dayDiv.style.borderRadius = "0.5rem";
-                dayDiv.style.padding = "0.25rem";
-                dayDiv.style.height = "4.8rem";
-                dayDiv.style.position = "relative";
-                dayDiv.style.overflow = "hidden";
-                dayDiv.style.display = "flex";
-                dayDiv.style.flexDirection = "column";
-                dayDiv.style.justify = "space-between";
-                dayDiv.style.cursor = "pointer";
-                dayDiv.style.backgroundColor = "#ffffff";
-
-                if (diaryDatabase[currentKey] && diaryDatabase[currentKey].image) {
-                    dayDiv.style.backgroundImage = `url(${diaryDatabase[currentKey].image})`;
-                    dayDiv.style.backgroundSize = 'cover';
-                    dayDiv.style.backgroundPosition = 'center';
-                    dayDiv.style.boxShadow = "inset 0 0 0 2000px rgba(255,255,255,0.5)";
-                }
-
-                const dayNum = document.createElement('span');
-                dayNum.innerText = day;
-                dayNum.style.fontWeight = "bold";
-                dayNum.style.fontSize = "1.25rem";
-
-                const dayOfWeek = new Date(year, month, day).getDay();
-                if (dayOfWeek === 0) dayNum.style.color = "#ef4444";
-                if (dayOfWeek === 6) dayNum.style.color = "#3b82f6";
-
-                dayDiv.appendChild(dayNum);
-
-                if (isFutureDate) {
-                    dayDiv.style.opacity = "0.35";
-                    dayDiv.style.cursor = "not-allowed";
-                    dayDiv.style.backgroundColor = "#e5e7eb";
-                    dayDiv.style.filter = "grayscale(0.5)";
-
-                    const lock = document.createElement('div');
-                    lock.innerText = "🔒";
-                    lock.style.position = "absolute";
-                    lock.style.bottom = "2px";
-                    lock.style.right = "4px";
-                    lock.style.fontSize = "14px";
-                    dayDiv.appendChild(lock);
-
-                    dayDiv.onclick = () => { alert("📅 미래 날짜의 일기는 아직 쓸 수 없어요!"); };
-                }
-                else if (diaryDatabase[currentKey]) {
-                    const prevDate = new Date(year, month, day);
-                    prevDate.setDate(prevDate.getDate() - 1);
-                    const prevKey = getFormattedDate(prevDate);
-
-                    if (diaryDatabase[prevKey]) {
-                        const line = document.createElement('div');
-                        line.style.position = "absolute";
-                        line.style.left = "-8px";
-                        line.style.top = "50%";
-                        line.style.width = "16px";
-                        line.style.height = "4px";
-                        line.style.background = "#ef4444";
-                        dayDiv.appendChild(line);
-                    }
-
-                    const icon = document.createElement('span');
-                    icon.innerText = "💮";
-                    icon.style.alignSelf = "flex-end";
-                    icon.style.fontSize = "1.25rem";
-                    dayDiv.appendChild(icon);
-
-                    dayDiv.onclick = () => { openModal(currentKey); };
-                }
-                else {
-                    dayDiv.onclick = () => { selectDiaryDate(currentKey); };
-                }
-
-                calendarDays.appendChild(dayDiv);
-            }
-        }
-
-        function changeMonth(direction) {
-            currentDate.setMonth(currentDate.getMonth() + direction);
-            renderCalendar();
-        }
-
-        function openModal(key) {
-            openedModalDate = key;
-            const data = diaryDatabase[key];
-            document.getElementById('modal-date').innerText = `📅 검사일: ${key} (${data.name || '어린이'})`;
-            document.getElementById('modal-weather').innerText = `날씨: ${data.weather}`;
-            document.getElementById('modal-text').innerText = data.text || "";
-            
-            const mImg = document.getElementById('modal-image');
-            if(data.image) {
-                mImg.src = data.image;
-                mImg.style.display = 'block';
-            } else {
-                mImg.style.display = 'none';
-            }
-            document.getElementById('diary-modal').style.display = 'flex';
-        }
-
-        function closeModal() {
-            document.getElementById('diary-modal').style.display = 'none';
-        }
-
-        function getFormattedDate(date) {
-            const y = date.getFullYear();
-            const m = String(date.getMonth() + 1).padStart(2, '0');
-            const d = String(date.getDate()).padStart(2, '0');
-            return `${y}-${m}-${d}`;
-        }
-
-        async function selectDiaryDate(newDate) {
-            if(isDirty) {
-                const shouldSave = confirm("입력중인 일기를 저장할까요?");
-                if(shouldSave) { await saveDiary(true); }
-            }
-            selectedDiaryDate = newDate;
-            renderTodayForm();
-
-            const diaryInput = document.getElementById('diary-text');
-            diaryInput.focus();
-            setTimeout(() => {
-                diaryInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 100);
-        }
-
-        async function deleteDiary() {
-            if(!confirm('정말 이 일기를 삭제할까요?')) return;
-
-            try {
-                const { error } = await _supabase
-                    .from('diary_entries')
-                    .delete()
-                    .eq('diary_date', openedModalDate)
-                    .eq('username', childName);
-
-                if(error) throw error;
-
-                delete diaryDatabase[openedModalDate];
-                closeModal();
-                renderCalendar();
-
-                if(selectedDiaryDate === openedModalDate) {
-                    renderTodayForm();
-                }
-                alert('🗑️ 일기가 삭제되었습니다.');
-            } catch(err) {
-                alert('삭제 실패: ' + err.message);
-            }
-        }
-
-        async function goToHome() {
-            if (isDirty) {
-                const shouldSave = confirm("작성중인 일기를 저장할까요?");
-                if (shouldSave) { await saveDiary(true); }
-            }
-
-            const confirmMove = confirm("첫 화면으로 돌아갈까요?");
-            if (!confirmMove) return;
-
-            // [교정] 홈화면 세션은 유지하되 메인 레이아웃 및 릴레이션 채널 인스턴스 정리
-            if(communityChannel) {
-                _supabase.removeChannel(communityChannel);
-                communityChannel = null;
-            }
-
-            document.getElementById('main-app').style.display = 'none';
-            document.getElementById('login-section').style.display = 'block';
-            renderUserList();
-        }
-
-        function saveUserName(name) {
-            let users = JSON.parse(localStorage.getItem('diaryUsers') || '[]');
-            if (!users.includes(name)) { users.unshift(name); }
-            users = users.slice(0, 5);
-            localStorage.setItem('diaryUsers', JSON.stringify(users));
-            renderUserList();
-        }
-
-        function renderUserList() {
-            const container = document.getElementById('recent-users');
-            if (!container) return;
-
-            const users = JSON.parse(localStorage.getItem('diaryUsers') || '[]');
-            container.innerHTML = "";
-
-            users.forEach(user => {
-                const btn = document.createElement('button');
-                btn.innerText = `🧒 ${user}`;
-                btn.className = "px-3 py-1 bg-amber-100 hover:bg-amber-200 rounded-lg border border-amber-700 text-lg font-bold";
-                btn.onclick = () => {
-                    document.getElementById('username').value = user;
-                    handleLogin();
-                };
-                container.appendChild(btn);
-            });
-        }
-
-        async function editDiary() {
-            closeModal();
-            await selectDiaryDate(openedModalDate);
-            document.getElementById('diary-text').focus();
-        }
-
-        function calculateStreak() {
-            const keys = Object.keys(diaryDatabase).sort();
-            let streak = 0;
-            let today = new Date();
-            today.setHours(0,0,0,0);
-
-            for(let i = 0; i < 365; i++) {
-                const checkDate = new Date(today);
-                checkDate.setDate(today.getDate() - i);
-                const key = getFormattedDate(checkDate);
-
-                if(keys.includes(key)) { streak++; } 
-                else { break; }
-            }
-            document.getElementById('streak-box').innerText = `💮 ${streak}일 연속 그림일기 작성중!`;
-        }
-
-        function toggleSound() {
-            soundEnabled = !soundEnabled;
-            localStorage.setItem('soundEnabled', soundEnabled);
-            document.getElementById('sound-toggle').innerText = soundEnabled ? '🔊' : '🔇';
-        }
-
-        let bgmOn = false;
-
-        // [교정] 임베드 전용 가공 엔진 탑재 및 모바일 웹 뷰 오디오 우회 재생 가동
-        function toggleYouTubeBGM() {
-            const iframe = document.getElementById('youtube-player');
-            const btn = document.getElementById('bgm-btn');
-
-            // 공유 주소에서 비디오 해시 ID만 정밀 추출
-            const rawUrl = "https://youtu.be/KEu5YL1VzEg?si=gNZ5AYJziHbA6tJi&t=15";
-            let videoId = "KEu5YL1VzEg"; // 폴백 기본 ID 세팅
-            
-            if(rawUrl.includes("youtu.be/")) {
-                videoId = rawUrl.split("youtu.be/")[1].split("?")[0];
-            }
-
-            if(!bgmOn) {
-                // 사파리/카카오톡 인앱 브라우저 대응을 위한 파라미터 강제 조합 (playsinline=1 및 유저 액션 트리거 동기화)
-                iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1&playlist=${videoId}&playsinline=1&enablejsapi=1`;
-                bgmOn = true;
-                btn.innerText = "⏸ 음악 끄기";
-                btn.classList.replace('bg-red-500', 'bg-gray-600');
-            } else {
-                iframe.src = "";
-                bgmOn = false;
-                btn.innerText = "🎵 음악 재생";
-                btn.classList.replace('bg-gray-600', 'bg-red-500');
-            }
-        }
-
-	async function signUp() {
-
-    const email =
-        document.getElementById("email").value.trim();
-
-    const password =
-        document.getElementById("password").value;
-
-    if(!email || !password){
-        alert("이메일과 비밀번호를 입력해주세요.");
-        return;
-    }
-
-    const { data, error } =
-        await _supabase.auth.signUp({
-            email,
-            password
-        });
-
-    if(error){
-        alert(error.message);
-        return;
-    }
-
-    alert(
-        "회원가입 완료!\n이메일 인증 후 로그인해주세요."
-    );
-}
-
-async function signIn() {
-
-    const email =
-        document.getElementById("email").value.trim();
-
-    const password =
-        document.getElementById("password").value;
-
-    const { data, error } =
-        await _supabase.auth.signInWithPassword({
-            email,
-            password
-        });
-
-    if(error){
-        alert(error.message);
-        return;
-    }
-
-    await startSession();
-}
-
-async function resetPassword() {
-
-    const email =
-        document.getElementById("email").value.trim();
-
-    if(!email){
-        alert("이메일을 입력하세요.");
-        return;
-    }
-
-    const { error } =
-        await _supabase.auth.resetPasswordForEmail(
-            email
-        );
-
-    if(error){
-        alert(error.message);
-        return;
-    }
-
-    alert("비밀번호 재설정 메일이 발송되었습니다.");
-}
-
-async function startSession() {
-
-    const { data } =
-        await _supabase.auth.getUser();
-
-    const user = data.user;
-
-    if(!user){
-        return;
-    }
-
-    childName =
-        user.email.split("@")[0];
-
-    document.getElementById(
-        'login-section'
-    ).style.display = 'none';
-
-    const mainApp =
-        document.getElementById(
-            'main-app'
-        );
-
-    mainApp.style.display = 'flex';
-    mainApp.classList.remove('hidden');
-
-    await initApp();
-}
-
-async function startSession() {
-
-    const { data } =
-        await _supabase.auth.getUser();
-
-    const user = data.user;
-
-    if(!user){
-        return;
-    }
-
-    childName =
-        user.email.split("@")[0];
-
-    document.getElementById(
-        'login-section'
-    ).style.display = 'none';
-
-    const mainApp =
-        document.getElementById(
-            'main-app'
-        );
-
-    mainApp.style.display = 'flex';
-    mainApp.classList.remove('hidden');
-
-    await initApp();
-}
-
-        // [교정] 자동 세션 복구 탑재 (보안 리스크 보류 지시 적용)
-   window.onload = async () => {
-    // 현재 로그인된 카카오 또는 이메일 세션 확인
-    const { data: { session } } = await _supabase.auth.getSession();
-    
-    if (session) {
-        currentUserUid = session.user.id;
-        
-        // [교정] 카카오 로그인 유저의 경우 메타데이터에서 닉네임을 최우선 추출
-        const kakaoName = session.user.user_metadata.full_name || session.user.user_metadata.name;
-        const emailName = session.user.user_metadata.display_name;
-        
-        // 카카오 이름이 있으면 그것을 쓰고, 없으면 이메일 가입 시 입력한 이름을 사용합니다.
-        childName = kakaoName || emailName || "몽글이";
-        
-        document.getElementById('login-section').style.display = 'none';
-        const mainApp = document.getElementById('main-app');
-        mainApp.style.display = 'flex';
-        mainApp.classList.remove('hidden');
-        initApp();
-    }
-};
-
-
-    </script>
+    <!-- ⚠️ 기능 스크립트 분할 로드 (반드시 이 순서대로 배치해야 합니다) -->
+    <script src="supabase-config.js"></script>
+    <script src="auth.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
