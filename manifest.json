@@ -19,14 +19,14 @@
 
 "screenshots": [
   {
-    "src": "/images/screenshot-wide.jpg",
+    "src": "/icon-512.png",
     "sizes": "1280x720",
     "type": "image/jpeg",
     "form_factor": "wide",
     "label": "몽글 일기장 PC 화면"
   },
   {
-    "src": "/images/screenshot-mobile.jpg",
+    "src": "/icon-192.png",
     "sizes": "390x844",
     "type": "image/jpeg",
     "form_factor": "narrow",
