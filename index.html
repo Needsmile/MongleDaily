@@ -612,11 +612,14 @@ async function saveDiary(silent = false) {
     }
 
     try {
-        if (selectedImageData && selectedImageData.startsWith('data:')) {
-            const safeName = childName.replace(/[^a-zA-Z0-9ㄱ-ㅎㅏ-ㅣ가-힣]/g, "");
-            fileName = `diary_${safeName || 'user'}_${Date.now()}.jpg`;
+  if (selectedImageData && selectedImageData.startsWith('data:')) {
+    // 1. 기존의 childName을 참조하던 로직을 완전히 삭제
+    // 2. 오직 타임스탬프와 랜덤 숫자만 사용하여 한글 유입을 원천 차단
+    const timestamp = Date.now();
+    const randomSuffix = Math.floor(Math.random() * 10000);
+    fileName = `diary_${timestamp}_${randomSuffix}.jpg`; 
 
-            const base64Data = selectedImageData.split(',')[1];
+    const base64Data = selectedImageData.split(',')[1];
             const byteCharacters = atob(base64Data);
             const byteNumbers = new Array(byteCharacters.length);
             for (let i = 0; i < byteCharacters.length; i++) {
