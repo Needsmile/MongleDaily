@@ -111,9 +111,41 @@
             <h2 class="text-4xl font-bold text-amber-800 mb-6">🎨 그림일기장 🎨</h2>
             <p class="text-lg text-amber-700 font-bold mb-4">제 3학년 1반 이름표를 적어주세요</p>
             <div class="space-y-4">
-                <input type="text" id="username" placeholder="이름 몽 글 이" value="몽글이" class="w-full border-b-4 border-amber-800 bg-transparent text-2xl text-center focus:outline-none placeholder-amber-600 font-bold tracking-widest">
 
-                <button onclick="handleLogin()" class="w-full bg-red-600 hover:bg-red-700 text-white text-2xl font-bold py-3 rounded-xl shadow-md transition duration-200 border-2 border-white">일기장 펼치기 📖</button>
+             <input
+    type="email"
+    id="email"
+    placeholder="이메일"
+    class="w-full border-b-4 border-amber-800 bg-transparent text-xl text-center focus:outline-none font-bold">
+
+<input
+    type="password"
+    id="password"
+    placeholder="비밀번호"
+    class="w-full border-b-4 border-amber-800 bg-transparent text-xl text-center focus:outline-none font-bold mt-3">
+
+<div class="space-y-2 mt-4">
+
+    <button
+        onclick="signUp()"
+        class="w-full bg-green-600 hover:bg-green-700 text-white text-xl font-bold py-3 rounded-xl">
+        회원가입
+    </button>
+
+    <button
+        onclick="signIn()"
+        class="w-full bg-blue-600 hover:bg-blue-700 text-white text-xl font-bold py-3 rounded-xl">
+        로그인
+    </button>
+
+    <button
+        onclick="resetPassword()"
+        class="w-full bg-gray-500 hover:bg-gray-600 text-white text-lg font-bold py-2 rounded-xl">
+        비밀번호 찾기
+    </button>
+
+</div>
+
                 <div class="mt-4">
                     <p class="text-amber-800 font-bold mb-2">최근 친구들</p>
                     <div id="recent-users" class="flex flex-wrap gap-2 justify-center"></div>
@@ -613,15 +645,24 @@ async function saveDiary(silent = false) {
         }
 
         // 데이터베이스(diary_entries)에 내용과 이미지 주소 저장
-        const { error } = await _supabase
-            .from('diary_entries')
-            .upsert({
-                diary_date: dateStr,
-                username: childName, // DB에는 원래 한글 이름 정상 저장
-                weather: weather,
-                diary_text: text,
-                image_data: imageUrl
-            }, { onConflict: 'username,diary_date' });
+ const {
+    data: { user }
+} = await _supabase.auth.getUser();
+
+const { error } = await _supabase
+    .from('diary_entries')
+    .upsert({
+        diary_date: dateStr,
+
+        username: childName,
+
+        user_id: user.id,
+
+        weather: weather,
+        diary_text: text,
+        image_data: imageUrl
+
+    }, { onConflict: 'username,diary_date' });
 
         if (error) throw error;
 
@@ -956,16 +997,166 @@ async function saveDiary(silent = false) {
             }
         }
 
+	async function signUp() {
+
+    const email =
+        document.getElementById("email").value.trim();
+
+    const password =
+        document.getElementById("password").value;
+
+    if(!email || !password){
+        alert("이메일과 비밀번호를 입력해주세요.");
+        return;
+    }
+
+    const { data, error } =
+        await _supabase.auth.signUp({
+            email,
+            password
+        });
+
+    if(error){
+        alert(error.message);
+        return;
+    }
+
+    alert(
+        "회원가입 완료!\n이메일 인증 후 로그인해주세요."
+    );
+}
+
+async function signIn() {
+
+    const email =
+        document.getElementById("email").value.trim();
+
+    const password =
+        document.getElementById("password").value;
+
+    const { data, error } =
+        await _supabase.auth.signInWithPassword({
+            email,
+            password
+        });
+
+    if(error){
+        alert(error.message);
+        return;
+    }
+
+    await startSession();
+}
+
+async function resetPassword() {
+
+    const email =
+        document.getElementById("email").value.trim();
+
+    if(!email){
+        alert("이메일을 입력하세요.");
+        return;
+    }
+
+    const { error } =
+        await _supabase.auth.resetPasswordForEmail(
+            email
+        );
+
+    if(error){
+        alert(error.message);
+        return;
+    }
+
+    alert("비밀번호 재설정 메일이 발송되었습니다.");
+}
+
+async function startSession() {
+
+    const { data } =
+        await _supabase.auth.getUser();
+
+    const user = data.user;
+
+    if(!user){
+        return;
+    }
+
+    childName =
+        user.email.split("@")[0];
+
+    document.getElementById(
+        'login-section'
+    ).style.display = 'none';
+
+    const mainApp =
+        document.getElementById(
+            'main-app'
+        );
+
+    mainApp.style.display = 'flex';
+    mainApp.classList.remove('hidden');
+
+    await initApp();
+}
+
+async function startSession() {
+
+    const { data } =
+        await _supabase.auth.getUser();
+
+    const user = data.user;
+
+    if(!user){
+        return;
+    }
+
+    childName =
+        user.email.split("@")[0];
+
+    document.getElementById(
+        'login-section'
+    ).style.display = 'none';
+
+    const mainApp =
+        document.getElementById(
+            'main-app'
+        );
+
+    mainApp.style.display = 'flex';
+    mainApp.classList.remove('hidden');
+
+    await initApp();
+}
+
         // [교정] 자동 세션 복구 탑재 (보안 리스크 보류 지시 적용)
-        window.onload = () => {
-            renderUserList();
-            
-            // 이전에 로그인했던 로그가 남아있다면 첫 시작 시 즉각 폼에 이름을 기재해 복구 유도 준비를 마칩니다.
-            const autoUser = localStorage.getItem('lastLoggedInUser');
-            if (autoUser) {
-                document.getElementById('username').value = autoUser;
-            }
-        };
+      window.onload = async () => {
+
+    renderUserList();
+
+    const {
+        data : { session }
+    } =
+    await _supabase.auth.getSession();
+
+    if(session){
+
+        childName =
+            session.user.email.split("@")[0];
+
+        document.getElementById(
+            'login-section'
+        ).style.display = 'none';
+
+        document.getElementById(
+            'main-app'
+        ).style.display = 'flex';
+
+        await initApp();
+    }
+}
+
+
     </script>
 </body>
 </html>
