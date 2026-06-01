@@ -1064,7 +1064,7 @@ async function sendPushNotificationToAll(writerName, diarySnippet) {
 
                 // 3. 푸시 서버(FCM VAPID) 구독 생성
                 // *주의: 공용 VAPID 공개키를 사용하거나 Firebase 콘솔에서 발급받은 키를 주입해야 합니다.
-                const applicationServerKey = urlB64ToUint8Array('YOUR_PUBLIC_VAPID_KEY_HERE');
+                const applicationServerKey = urlB64ToUint8Array('BOvCKLrC7KfVQ_wl7wY5qPSHoNMer8c7DTJk-E1mdd01rDgWDzYkNDOV0-XHNWxn5TVfr_RhFvLuOi5IWPBeQoU');
                 const subscription = await registration.pushManager.subscribe({
                     userVisibleOnly: true,
                     applicationServerKey: applicationServerKey
