@@ -4,12 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>초등학교 여름방학 그림일기</title>
+    
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Gamja+Flower&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#2b4436">
+    <link rel="apple-touch-icon" sizes="180x180" href="/icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="그림일기">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body class="p-3 md:p-6 flex flex-col items-center min-h-screen">
 
@@ -18,21 +28,19 @@
             <h1 class="text-5xl font-bold text-amber-900 mb-1">여름방학</h1>
             <h2 class="text-4xl font-bold text-amber-800 mb-6">🎨 그림일기장 🎨</h2>
             <p class="text-lg text-amber-700 font-bold mb-4">제 3학년 1반 이름표를 적어주세요</p>
-            
-            <div class="space-y-4 text-left">
-                <div>
-                    <input type="email" id="auth-email" placeholder="이메일 주소 (example@email.com)" class="w-full p-2 border-2 border-amber-800 bg-white rounded-lg font-bold focus:outline-none mb-2">
-                    <input type="password" id="auth-password" placeholder="비밀번호 (******)" class="w-full p-2 border-2 border-amber-800 bg-white rounded-lg font-bold focus:outline-none mb-2">
-                    <input type="text" id="username" placeholder="이름 몽 글 이" value="몽글이" class="w-full border-b-4 border-amber-800 bg-transparent text-2xl text-center focus:outline-none placeholder-amber-600 font-bold tracking-widest mt-2">
-                </div>
-
-                <div class="grid grid-cols-2 gap-2">
-                    <button onclick="handleLogin()" class="w-full bg-red-600 hover:bg-red-700 text-white text-xl font-bold py-3 rounded-xl shadow-md transition duration-200 border-2 border-white cursor-pointer">일기장 펼치기 📖</button>
-                    <button onclick="handleSignUp()" class="w-full bg-amber-700 hover:bg-amber-800 text-white text-xl font-bold py-3 rounded-xl shadow-md transition duration-200 border-2 border-white cursor-pointer">회원등록 🎉</button>
+      
+            <div class="space-y-4">
+                <input type="text" id="username" placeholder="이름 몽 글 이" value="몽글이" class="w-full border-b-4 border-amber-800 bg-transparent text-2xl text-center focus:outline-none placeholder-amber-600 font-bold tracking-widest">
+                <button onclick="handleLogin()" class="w-full bg-red-600 hover:bg-red-700 text-white text-2xl font-bold py-3 rounded-xl shadow-md transition duration-200 border-2 border-white">일기장 펼치기 📖</button>
+                <div class="mt-4">
+                    <p class="text-amber-800 font-bold mb-2">최근 친구들</p>
+                    <div id="recent-users" class="flex flex-wrap gap-2 justify-center"></div>
                 </div>
             </div>
+            <div id="streak-box" class="mt-4 text-lg font-bold text-red-700"></div>
             <p class="text-sm text-amber-600 mt-6 font-bold">교육부 검인정 (주)몽글출판사</p>
-            <button id="bgm-btn" onclick="toggleYouTubeBGM()" class="mt-3 w-full bg-red-500 hover:bg-red-600 text-white text-xl font-bold py-2 rounded-xl border-2 border-white cursor-pointer">🎵 음악 재생</button>
+            <button id="install-btn" class="hidden w-full bg-green-600 hover:bg-green-700 text-white text-xl font-bold py-2 rounded-xl border-2 border-white mt-2">📲 앱 설치하기</button>
+            <button id="bgm-btn" onclick="toggleYouTubeBGM()" class="mt-3 w-full bg-red-500 hover:bg-red-600 text-white text-xl font-bold py-2 rounded-xl border-2 border-white">🎵 음악 재생</button>
         </div>
     </div>
 
@@ -40,9 +48,9 @@
         
         <div class="w-full min-w-full lg:min-w-0 lg:w-1/2 retro-paper rounded-3xl p-5 shadow-2xl flex flex-col">
             <div class="flex items-center border-2 border-amber-900 bg-amber-100 bg-opacity-50 mb-4 rounded-lg overflow-hidden text-amber-900 font-bold">
-                <button onclick="handleLogout()" class="px-3 py-2 bg-red-600 hover:bg-red-700 text-white border-r-2 border-amber-900 text-base font-bold whitespace-nowrap cursor-pointer">나가기 🚪</button>
+                <button onclick="goToHome()" class="px-3 py-2 bg-amber-200 hover:bg-amber-300 border-r-2 border-amber-900 text-lg font-bold whitespace-nowrap">🏠</button>
                 <div id="current-date-display" class="flex-1 min-w-0 px-2 py-2 text-center whitespace-nowrap text-xs sm:text-sm md:text-lg">2026-05-27</div>
-                <div class="flex items-center justify-center px-1 py-1 bg-white border-l-2 border-amber-900" style="min-width:92px;">
+                <div class="flex items-center justify-center px-1 py-1 bg-white border-l-2 border-amber-900 min-width-weather">
                     <span class="mr-1 text-[10px] sm:text-xs whitespace-nowrap">날씨:</span>
                     <select id="weather" class="bg-amber-200 hover:bg-amber-300 text-amber-900 text-sm sm:text-base md:text-lg font-bold border-2 border-amber-800 rounded-md px-1 py-0.5 focus:outline-none cursor-pointer appearance-none transition-colors">
                         <option value="☀️">☀️ 맑음</option>
@@ -51,12 +59,13 @@
                         <option value="⚡">⚡ 천둥</option>
                         <option value="☃️">☃️ 눈옴</option>
                     </select>
+                    <button id="sound-toggle" onclick="toggleSound()" class="ml-1 px-2 py-1 bg-amber-200 hover:bg-amber-300 border-2 border-amber-800 rounded-md text-sm font-bold">🔊</button>
                 </div>
             </div>
 
             <div class="flex w-full mb-2 border-2 border-amber-800 rounded-lg overflow-hidden text-lg font-bold">
-                <button id="tab-photo-btn" onclick="switchUploadMethod('photo')" class="w-1/2 py-2 bg-amber-200 text-black font-bold transition-colors cursor-pointer">📸 사진 첨부하기</button>
-                <button id="tab-draw-btn" onclick="switchUploadMethod('draw')" class="w-1/2 py-2 bg-amber-50 text-gray-500 font-bold transition-colors cursor-pointer">✏️ 직접 그림그리기</button>
+                <button id="tab-photo-btn" onclick="switchUploadMethod('photo')" class="w-1/2 py-2 bg-amber-200 text-black font-bold transition-colors">📸 사진 첨부하기</button>
+                <button id="tab-draw-btn" onclick="switchUploadMethod('draw')" class="w-1/2 py-2 bg-amber-50 text-gray-500 font-bold transition-colors">✏️ 직접 그림그리기</button>
             </div>
 
             <div class="border-4 border-solid border-amber-900 bg-white h-64 flex flex-col items-center justify-center relative overflow-hidden mb-4 shadow-inner rounded-md">
@@ -78,25 +87,25 @@
                                 <option value="12">🖍️ 두껍게</option>
                             </select>
                         </div>
-                        <button onclick="clearCanvas()" class="px-2 py-0.5 bg-red-100 hover:bg-red-200 text-red-700 border border-red-400 rounded text-sm font-bold cursor-pointer">🧼 전부 지우기</button>
+                        <button onclick="clearCanvas()" class="px-2 py-0.5 bg-red-100 hover:bg-red-200 text-red-700 border border-red-400 rounded text-sm font-bold">🧼 전부 지우기</button>
                     </div>
                     <canvas id="paintCanvas" class="w-full flex-grow cursor-crosshair touch-none"></canvas>
                 </div>
 
                 <img id="image-preview" class="w-full h-full object-contain hidden pointer-events-none z-20 bg-white" alt="최종그림">
-                <button id="reset-media-btn" onclick="resetMediaSelection()" class="absolute bottom-2 right-2 hidden z-30 px-3 py-1 bg-gray-800 text-white text-sm font-bold rounded-lg opacity-80 hover:opacity-100 cursor-pointer">다시 고르기 ↺</button>
+                <button id="reset-media-btn" onclick="resetMediaSelection()" class="absolute bottom-2 right-2 hidden z-30 px-3 py-1 bg-gray-800 text-white text-sm font-bold rounded-lg opacity-80 hover:opacity-100">다시 고르기 ↺</button>
             </div>
 
-            <textarea id="diary-text" rows="5" placeholder="오늘 하루는 무엇을 하고 놀았는지 깍두기 칸에 차근차근 적어봅시다." class="w-full bg-white border-2 border-amber-900 rounded-lg shadow-inner focus:outline-none resize-none kakdugi-notebook flex-grow" style="height: 200px;"></textarea>
-            <button onclick="saveDiary()" class="mt-4 bg-red-600 hover:bg-red-700 text-white text-2xl font-bold py-2 rounded-xl shadow-lg transition duration-200 border-2 border-white tracking-wider cursor-pointer">💮 참 잘했어요 도장 찍기</button>
+            <textarea id="diary-text" rows="5" placeholder="오늘 하루는 무엇을 하고 놀았는지 깍두기 칸에 차근차근 적어봅시다." class="w-full bg-white border-2 border-amber-900 rounded-lg shadow-inner focus:outline-none resize-none kakdugi-notebook flex-grow custom-textarea-height"></textarea>
+            <button onclick="saveDiary()" class="mt-4 bg-red-600 hover:bg-red-700 text-white text-2xl font-bold py-2 rounded-xl shadow-lg transition duration-200 border-2 border-white tracking-wider">💮 참 잘했어요 도장 찍기</button>
         </div>
 
         <div class="w-full lg:w-1/2 min-w-full lg:min-w-0 snap-center retro-paper rounded-3xl p-5 shadow-2xl flex flex-col justify-between bg-yellow-50 bg-opacity-30">
             <div>
                 <div class="flex justify-between items-center border-b-4 border-amber-900 pb-2 mb-4">
-                    <button onclick="changeMonth(-1)" class="text-2xl font-bold text-amber-900 hover:scale-120 px-2 cursor-pointer">◀</button>
+                    <button onclick="changeMonth(-1)" class="text-2xl font-bold text-amber-900 hover:scale-120 px-2">◀</button>
                     <h2 class="text-xl sm:text-2xl md:text-3xl font-bold text-amber-900 tracking-normal sm:tracking-widest whitespace-nowrap text-center flex-grow" id="calendar-month-year">2026년 5월 월간 도장표</h2>
-                    <button onclick="changeMonth(1)" class="text-2xl font-bold text-amber-900 hover:scale-120 px-2 cursor-pointer">▶</button>
+                    <button onclick="changeMonth(1)" class="text-2xl font-bold text-amber-900 hover:scale-120 px-2">▶</button>
                 </div>
 
                 <div class="grid grid-cols-7 text-center font-bold text-lg mb-2 text-amber-950 bg-amber-200 bg-opacity-50 py-1 rounded">
@@ -105,22 +114,12 @@
                 <div class="grid grid-cols-7 gap-2" id="calendar-days"></div>
             </div>
 
-            <div class="mt-4 p-3 bg-white border-2 border-amber-800 rounded-xl">
-                <p class="font-bold text-amber-900 mb-2 text-lg">🤝 내 단짝 친구 등록하기</p>
-                <div class="flex gap-2 mb-2">
-                    <input type="email" id="friend-email-input" placeholder="친구의 이메일 주소 입력" class="flex-grow p-1.5 border-2 border-amber-800 rounded-lg text-sm font-bold focus:outline-none">
-                    <button onclick="addFriend()" class="px-3 py-1.5 bg-amber-700 hover:bg-amber-800 text-white font-bold text-sm rounded-lg border-2 border-white cursor-pointer">신청 📋</button>
-                </div>
-                <div id="friend-list-tags" class="flex flex-wrap gap-1.5 text-xs font-bold text-amber-950">
-                    </div>
-            </div>
-
             <div class="mt-4">
-                <button onclick="toggleCommunity()" class="w-full bg-amber-200 hover:bg-amber-300 border-2 border-amber-800 rounded-xl py-2 text-xl font-bold text-amber-900 cursor-pointer">🌎 단짝 친구들 일기 구경하기</button>
-                <div id="community-list" class="hidden mt-3 bg-white border-2 border-amber-800 rounded-xl p-3 max-h-48 overflow-y-auto space-y-3">
-                    </div>
+                <button onclick="toggleCommunity()" class="w-full bg-amber-200 hover:bg-amber-300 border-2 border-amber-800 rounded-xl py-2 text-xl font-bold text-amber-900">🌎 친구들 일기 구경하기</button>
+                <div id="community-list" class="hidden mt-3 bg-white border-2 border-amber-800 rounded-xl p-3 max-h-60 overflow-y-auto space-y-3"></div>
             </div>
-            <div class="mt-4 p-2 bg-white border-2 border-amber-800 rounded-xl text-center font-bold text-amber-900 text-sm">
+            
+            <div class="mt-4 p-3 bg-white border-2 border-amber-800 rounded-xl text-center font-bold text-amber-900 text-sm">
                 🎉 축하합니다! 이제 작성하신 일기는 데이터베이스에 안전하게 저장됩니다.
             </div>
         </div>
@@ -129,18 +128,15 @@
     <div id="diary-modal" class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center p-4 z-50">
         <div class="retro-paper rounded-3xl p-6 max-w-md w-full relative">
             <div class="flex justify-between items-center mb-4 gap-2">
-                <div class="flex gap-2" id="modal-action-buttons">
-                    <button onclick="editDiary()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg font-bold text-sm cursor-pointer">수정</button>
-                    <button onclick="deleteDiary()" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg font-bold text-sm cursor-pointer">삭제</button>
+                <div class="flex gap-2">
+                    <button onclick="editDiary()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg font-bold text-sm">수정</button>
+                    <button onclick="deleteDiary()" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg font-bold text-sm">삭제</button>
                 </div>
-                <button onclick="closeModal()" class="text-4xl leading-none font-bold text-amber-900 hover:scale-110 transition-transform cursor-pointer">×</button>
+                <button onclick="closeModal()" class="text-4xl leading-none font-bold text-amber-900 hover:scale-110 transition-transform">×</button>
             </div>
 
             <div class="flex justify-between items-center border-b-2 border-amber-900 pb-2 mb-4 font-bold text-amber-950 text-xl">
-                <div class="flex flex-col">
-                    <h3 id="modal-author" class="text-sm text-amber-700">작성자: 몽글이</h3>
-                    <h3 id="modal-date">날짜</h3>
-                </div>
+                <h3 id="modal-date">날짜</h3>
                 <span id="modal-weather" class="text-2xl">☀️</span>
             </div>
 
@@ -149,7 +145,7 @@
             </div>
 
             <div class="relative">
-                <p id="modal-text" class="bg-white rounded-xl border-2 border-amber-900 shadow-inner whitespace-pre-wrap kakdugi-notebook p-4 text-amber-950 font-bold" style="height: 160px;"></p>
+                <p id="modal-text" class="bg-white rounded-xl border-2 border-amber-900 shadow-inner whitespace-pre-wrap kakdugi-notebook custom-modal-text-height"></p>
                 <div class="absolute -bottom-4 -right-2 retro-stamp rounded-full p-2 text-center w-24 h-24 flex flex-col items-center justify-center font-black text-xs border-double">
                     <span class="text-lg">💮</span>참잘했어요
                 </div>
@@ -157,12 +153,10 @@
         </div>
     </div>
 
-    <div id="youtube-bgm" style="position:fixed; bottom:0; left:0; width:1px; height:1px; opacity:0.01; pointer-events:none; z-index:-999;">
+    <div id="youtube-bgm" class="youtube-audio-hide">
         <iframe id="youtube-player" width="1" height="1" src="" frameborder="0" allow="autoplay; encrypted-media"></iframe>
     </div>
 
-    <script src="supabase-config.js"></script>
-    <script src="auth.js"></script>
-    <script src="app.js"></script>
+    <script src="app.js" defer></script>
 </body>
 </html>
