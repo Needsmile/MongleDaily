@@ -1,5 +1,5 @@
 {
-  "name": "국민학교 여름방학 그림일기장",
+  "name": "몽글일기",
   "icons": [
     {
       "src": "/icon-192.png",
@@ -14,22 +14,21 @@
   ],
   "theme_color": "#2b4436",
   "background_color": "#ffffff",
-  "display": "standalone"
+  "display": "standalone",
+  "screenshots": [
+    {
+      "src": "/screenshot-wide.jpg",
+      "sizes": "1280x720",
+      "type": "image/jpeg",
+      "form_factor": "wide",
+      "label": "몽글 일기장 PC 화면"
+    },
+    {
+      "src": "/screenshot-mobile.jpg",
+      "sizes": "390x844",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "몽글 일기장 모바일 화면"
+    }
+  ]
 }
-
-"screenshots": [
-  {
-    "src": "/screenshot-wide.jpg",
-    "sizes": "1280x720",
-    "type": "image/jpeg",
-    "form_factor": "wide",
-    "label": "몽글 일기장 PC 화면"
-  },
-  {
-    "src": "/screenshot-mobile.jpg",
-    "sizes": "390x844",
-    "type": "image/jpeg",
-    "form_factor": "narrow",
-    "label": "몽글 일기장 모바일 화면"
-  }
-]
