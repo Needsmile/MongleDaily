@@ -27,20 +27,27 @@
         <div class="border-4 border-double border-amber-800 p-4 rounded-xl bg-yellow-50 bg-opacity-50">
             <h1 class="text-5xl font-bold text-amber-900 mb-1">여름방학</h1>
             <h2 class="text-4xl font-bold text-amber-800 mb-6">🎨 그림일기장 🎨</h2>
-            <p class="text-lg text-amber-700 font-bold mb-4">제 3학년 1반 이름표를 적어주세요</p>
+            <p class="text-lg text-amber-700 font-bold mb-4">등록된 이메일과 비밀번호를 적어주세요</p>
       
             <div class="space-y-4">
-                <input type="text" id="username" placeholder="이름 몽 글 이" value="몽글이" class="w-full border-b-4 border-amber-800 bg-transparent text-2xl text-center focus:outline-none placeholder-amber-600 font-bold tracking-widest">
-                <button onclick="handleLogin()" class="w-full bg-red-600 hover:bg-red-700 text-white text-2xl font-bold py-3 rounded-xl shadow-md transition duration-200 border-2 border-white">일기장 펼치기 📖</button>
+                <input type="email" id="login-email" placeholder="이메일 (example@email.com)" class="w-full border-b-4 border-amber-800 bg-transparent text-xl text-center focus:outline-none placeholder-amber-600 font-bold tracking-wide">
+                
+                <input type="password" id="login-password" placeholder="비밀번호 입력" class="w-full border-b-4 border-amber-800 bg-transparent text-xl text-center focus:outline-none placeholder-amber-600 font-bold tracking-wide">
+
+                <div class="flex gap-2 pt-2">
+                    <button onclick="handleLogin()" class="w-1/2 bg-red-600 hover:bg-red-700 text-white text-xl font-bold py-3 rounded-xl shadow-md transition duration-200 border-2 border-white cursor-pointer">로그인 📖</button>
+                    <button onclick="handleSignUp()" class="w-1/2 bg-amber-700 hover:bg-amber-800 text-white text-xl font-bold py-3 rounded-xl shadow-md transition duration-200 border-2 border-white cursor-pointer">회원가입 ✨</button>
+                </div>
+                
                 <div class="mt-4">
-                    <p class="text-amber-800 font-bold mb-2">최근 친구들</p>
+                    <p class="text-amber-800 font-bold mb-2">최근 접속 계정</p>
                     <div id="recent-users" class="flex flex-wrap gap-2 justify-center"></div>
                 </div>
             </div>
             <div id="streak-box" class="mt-4 text-lg font-bold text-red-700"></div>
             <p class="text-sm text-amber-600 mt-6 font-bold">교육부 검인정 (주)몽글출판사</p>
             <button id="install-btn" class="hidden w-full bg-green-600 hover:bg-green-700 text-white text-xl font-bold py-2 rounded-xl border-2 border-white mt-2">📲 앱 설치하기</button>
-            <button id="bgm-btn" onclick="toggleYouTubeBGM()" class="mt-3 w-full bg-red-500 hover:bg-red-600 text-white text-xl font-bold py-2 rounded-xl border-2 border-white">🎵 음악 재생</button>
+            <button id="bgm-btn" onclick="toggleYouTubeBGM()" class="mt-3 w-full bg-red-500 hover:bg-red-600 text-white text-xl font-bold py-2 rounded-xl border-2 border-white cursor-pointer">🎵 음악 재생</button>
         </div>
     </div>
 
@@ -48,7 +55,7 @@
         
         <div class="w-full min-w-full lg:min-w-0 lg:w-1/2 retro-paper rounded-3xl p-5 shadow-2xl flex flex-col">
             <div class="flex items-center border-2 border-amber-900 bg-amber-100 bg-opacity-50 mb-4 rounded-lg overflow-hidden text-amber-900 font-bold">
-                <button onclick="goToHome()" class="px-3 py-2 bg-amber-200 hover:bg-amber-300 border-r-2 border-amber-900 text-lg font-bold whitespace-nowrap">🏠</button>
+                <button onclick="goToHome()" class="px-3 py-2 bg-amber-200 hover:bg-amber-300 border-r-2 border-amber-900 text-lg font-bold whitespace-nowrap cursor-pointer">🏠</button>
                 <div id="current-date-display" class="flex-1 min-w-0 px-2 py-2 text-center whitespace-nowrap text-xs sm:text-sm md:text-lg">2026-05-27</div>
                 <div class="flex items-center justify-center px-1 py-1 bg-white border-l-2 border-amber-900 min-width-weather">
                     <span class="mr-1 text-[10px] sm:text-xs whitespace-nowrap">날씨:</span>
@@ -59,13 +66,13 @@
                         <option value="⚡">⚡ 천둥</option>
                         <option value="☃️">☃️ 눈옴</option>
                     </select>
-                    <button id="sound-toggle" onclick="toggleSound()" class="ml-1 px-2 py-1 bg-amber-200 hover:bg-amber-300 border-2 border-amber-800 rounded-md text-sm font-bold">🔊</button>
+                    <button id="sound-toggle" onclick="toggleSound()" class="ml-1 px-2 py-1 bg-amber-200 hover:bg-amber-300 border-2 border-amber-800 rounded-md text-sm font-bold cursor-pointer">🔊</button>
                 </div>
             </div>
 
             <div class="flex w-full mb-2 border-2 border-amber-800 rounded-lg overflow-hidden text-lg font-bold">
-                <button id="tab-photo-btn" onclick="switchUploadMethod('photo')" class="w-1/2 py-2 bg-amber-200 text-black font-bold transition-colors">📸 사진 첨부하기</button>
-                <button id="tab-draw-btn" onclick="switchUploadMethod('draw')" class="w-1/2 py-2 bg-amber-50 text-gray-500 font-bold transition-colors">✏️ 직접 그림그리기</button>
+                <button id="tab-photo-btn" onclick="switchUploadMethod('photo')" class="w-1/2 py-2 bg-amber-200 text-black font-bold transition-colors cursor-pointer">📸 사진 첨부하기</button>
+                <button id="tab-draw-btn" onclick="switchUploadMethod('draw')" class="w-1/2 py-2 bg-amber-50 text-gray-500 font-bold transition-colors cursor-pointer">✏️ 직접 그림그리기</button>
             </div>
 
             <div class="border-4 border-solid border-amber-900 bg-white h-64 flex flex-col items-center justify-center relative overflow-hidden mb-4 shadow-inner rounded-md">
@@ -87,25 +94,25 @@
                                 <option value="12">🖍️ 두껍게</option>
                             </select>
                         </div>
-                        <button onclick="clearCanvas()" class="px-2 py-0.5 bg-red-100 hover:bg-red-200 text-red-700 border border-red-400 rounded text-sm font-bold">🧼 전부 지우기</button>
+                        <button onclick="clearCanvas()" class="px-2 py-0.5 bg-red-100 hover:bg-red-200 text-red-700 border border-red-400 rounded text-sm font-bold cursor-pointer">🧼 전부 지우기</button>
                     </div>
                     <canvas id="paintCanvas" class="w-full flex-grow cursor-crosshair touch-none"></canvas>
                 </div>
 
                 <img id="image-preview" class="w-full h-full object-contain hidden pointer-events-none z-20 bg-white" alt="최종그림">
-                <button id="reset-media-btn" onclick="resetMediaSelection()" class="absolute bottom-2 right-2 hidden z-30 px-3 py-1 bg-gray-800 text-white text-sm font-bold rounded-lg opacity-80 hover:opacity-100">다시 고르기 ↺</button>
+                <button id="reset-media-btn" onclick="resetMediaSelection()" class="absolute bottom-2 right-2 hidden z-30 px-3 py-1 bg-gray-800 text-white text-sm font-bold rounded-lg opacity-80 hover:opacity-100 cursor-pointer">다시 고르기 ↺</button>
             </div>
 
             <textarea id="diary-text" rows="5" placeholder="오늘 하루는 무엇을 하고 놀았는지 깍두기 칸에 차근차근 적어봅시다." class="w-full bg-white border-2 border-amber-900 rounded-lg shadow-inner focus:outline-none resize-none kakdugi-notebook flex-grow custom-textarea-height"></textarea>
-            <button onclick="saveDiary()" class="mt-4 bg-red-600 hover:bg-red-700 text-white text-2xl font-bold py-2 rounded-xl shadow-lg transition duration-200 border-2 border-white tracking-wider">💮 참 잘했어요 도장 찍기</button>
+            <button onclick="saveDiary()" class="mt-4 bg-red-600 hover:bg-red-700 text-white text-2xl font-bold py-2 rounded-xl shadow-lg transition duration-200 border-2 border-white tracking-wider cursor-pointer">💮 참 잘했어요 도장 찍기</button>
         </div>
 
         <div class="w-full lg:w-1/2 min-w-full lg:min-w-0 snap-center retro-paper rounded-3xl p-5 shadow-2xl flex flex-col justify-between bg-yellow-50 bg-opacity-30">
             <div>
                 <div class="flex justify-between items-center border-b-4 border-amber-900 pb-2 mb-4">
-                    <button onclick="changeMonth(-1)" class="text-2xl font-bold text-amber-900 hover:scale-120 px-2">◀</button>
+                    <button onclick="changeMonth(-1)" class="text-2xl font-bold text-amber-900 hover:scale-120 px-2 cursor-pointer">◀</button>
                     <h2 class="text-xl sm:text-2xl md:text-3xl font-bold text-amber-900 tracking-normal sm:tracking-widest whitespace-nowrap text-center flex-grow" id="calendar-month-year">2026년 5월 월간 도장표</h2>
-                    <button onclick="changeMonth(1)" class="text-2xl font-bold text-amber-900 hover:scale-120 px-2">▶</button>
+                    <button onclick="changeMonth(1)" class="text-2xl font-bold text-amber-900 hover:scale-120 px-2 cursor-pointer">▶</button>
                 </div>
 
                 <div class="grid grid-cols-7 text-center font-bold text-lg mb-2 text-amber-950 bg-amber-200 bg-opacity-50 py-1 rounded">
@@ -115,7 +122,7 @@
             </div>
 
             <div class="mt-4">
-                <button onclick="toggleCommunity()" class="w-full bg-amber-200 hover:bg-amber-300 border-2 border-amber-800 rounded-xl py-2 text-xl font-bold text-amber-900">🌎 친구들 일기 구경하기</button>
+                <button onclick="toggleCommunity()" class="w-full bg-amber-200 hover:bg-amber-300 border-2 border-amber-800 rounded-xl py-2 text-xl font-bold text-amber-900 cursor-pointer">🌎 친구들 일기 구경하기</button>
                 <div id="community-list" class="hidden mt-3 bg-white border-2 border-amber-800 rounded-xl p-3 max-h-60 overflow-y-auto space-y-3"></div>
             </div>
             
@@ -129,10 +136,10 @@
         <div class="retro-paper rounded-3xl p-6 max-w-md w-full relative">
             <div class="flex justify-between items-center mb-4 gap-2">
                 <div class="flex gap-2">
-                    <button onclick="editDiary()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg font-bold text-sm">수정</button>
-                    <button onclick="deleteDiary()" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg font-bold text-sm">삭제</button>
+                    <button onclick="editDiary()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg font-bold text-sm cursor-pointer">수정</button>
+                    <button onclick="deleteDiary()" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg font-bold text-sm cursor-pointer">삭제</button>
                 </div>
-                <button onclick="closeModal()" class="text-4xl leading-none font-bold text-amber-900 hover:scale-110 transition-transform">×</button>
+                <button onclick="closeModal()" class="text-4xl leading-none font-bold text-amber-900 hover:scale-110 transition-transform cursor-pointer">×</button>
             </div>
 
             <div class="flex justify-between items-center border-b-2 border-amber-900 pb-2 mb-4 font-bold text-amber-950 text-xl">
