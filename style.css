@@ -1,15 +1,15 @@
 /* 여름방학 그림일기장 고유 스타일 테마 */
 body {
-    font-family: 'Gaegu', 'Malgun Gothic', cursive, sans-serif;
-    background-image: radial-gradient(#d6ccc2 1px, transparent 1px);
-    background-size: 20px 20px;
+    font-family: 'Gamja Flower', cursive, sans-serif;
+    background-color: #2b4436;
+    background-image: radial-gradient(#3a5a47 1.5px, transparent 1.5px);
+    background-size: 24px 24px;
 }
-
 /* 옛날 옛적 공책 질감 패널 */
 .retro-paper {
-    background-color: #fcf6bd;
-    border: 6px solid #7f5539;
-    box-shadow: 12px 12px 0px #4a3728;
+    background-color: #fcf5e3;
+    border: 6px double #6b4c35;
+    box-shadow: 10px 10px 0px #1c2e24;
 }
 
 /* 반으로 접힌 일기장 공책 효과 */
@@ -19,12 +19,30 @@ body {
     background-image: linear-gradient(to right, #fefae0 49%, #dda15e 50%, #fefae0 51%);
 }
 
+/* 깍두기 초등학교 공책 줄눈 효과 복원 */
+.kakdugi-notebook {
+    background-image: linear-gradient(#ffffff 94%, #fbcfe8 94%);
+    background-size: 100% 2.4rem;
+    line-height: 2.4rem !important;
+    padding: 0.4rem 1rem;
+    font-family: 'Gamja Flower', cursive, sans-serif;
+    font-size: 1.4rem !important;
+}
+.retro-stamp {
+    border: 4px double #dc2626;
+    color: #dc2626;
+    transform: rotate(-15deg);
+    background-color: rgba(255, 255, 255, 0.8);
+}
+
 /* 공책 줄눈 효과 */
 textarea {
     background-image: linear-gradient(#ffffff 95%, #e6ccb2 95%);
     background-size: 100% 2rem;
     line-height: 2rem !important;
 }
+
+
 
 /* 스크롤바 감성 디자인 */
 ::-webkit-scrollbar {
