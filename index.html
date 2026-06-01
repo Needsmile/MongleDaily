@@ -1130,31 +1130,27 @@ async function startSession() {
 }
 
         // [교정] 자동 세션 복구 탑재 (보안 리스크 보류 지시 적용)
-      window.onload = async () => {
-
-    renderUserList();
-
-    const {
-        data : { session }
-    } =
-    await _supabase.auth.getSession();
-
-    if(session){
-
-        childName =
-            session.user.email.split("@")[0];
-
-        document.getElementById(
-            'login-section'
-        ).style.display = 'none';
-
-        document.getElementById(
-            'main-app'
-        ).style.display = 'flex';
-
-        await initApp();
+   window.onload = async () => {
+    // 현재 로그인된 카카오 또는 이메일 세션 확인
+    const { data: { session } } = await _supabase.auth.getSession();
+    
+    if (session) {
+        currentUserUid = session.user.id;
+        
+        // [교정] 카카오 로그인 유저의 경우 메타데이터에서 닉네임을 최우선 추출
+        const kakaoName = session.user.user_metadata.full_name || session.user.user_metadata.name;
+        const emailName = session.user.user_metadata.display_name;
+        
+        // 카카오 이름이 있으면 그것을 쓰고, 없으면 이메일 가입 시 입력한 이름을 사용합니다.
+        childName = kakaoName || emailName || "몽글이";
+        
+        document.getElementById('login-section').style.display = 'none';
+        const mainApp = document.getElementById('main-app');
+        mainApp.style.display = 'flex';
+        mainApp.classList.remove('hidden');
+        initApp();
     }
-}
+};
 
 
     </script>
