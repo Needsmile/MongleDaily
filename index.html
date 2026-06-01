@@ -15,36 +15,41 @@
 <body class="bg-stone-200 flex justify-center items-center min-h-screen p-4 overflow-x-hidden">
 
     <!-- 1단계 인증 포함 로그인 섹션 -->
-    <div id="login-section" class="w-full max-w-md retro-paper rounded-2xl p-8 shadow-2xl text-center my-auto">
+   <div id="login-section" class="w-full max-w-md retro-paper rounded-2xl p-8 shadow-2xl text-center my-auto">
         <div class="border-4 border-double border-amber-800 p-4 rounded-xl bg-yellow-50 bg-opacity-50">
             <h1 class="text-5xl font-bold text-amber-900 mb-1">여름방학</h1>
             <h2 class="text-4xl font-bold text-amber-800 mb-6">🎨 그림일기장 🎨</h2>
             
+            <p class="text-lg text-amber-700 font-bold mb-4">제 3학년 1반 이름표를 적어주세요</p>
+            
             <div class="space-y-3 text-left mb-4">
                 <div>
-                    <label class="block text-amber-900 font-bold mb-1">이메일 주소</label>
-                    <input type="email" id="auth-email" placeholder="example@email.com" class="w-full p-2 border-2 border-amber-800 bg-white rounded-lg font-bold focus:outline-none">
+                    <label class="block text-amber-900 font-bold mb-1 text-sm">📧 이메일 주소</label>
+                    <input type="email" id="auth-email" placeholder="example@email.com" class="w-full p-2 border-2 border-amber-800 bg-white rounded-lg font-bold focus:outline-none text-lg">
                 </div>
                 <div>
-                    <label class="block text-amber-900 font-bold mb-1">비밀번호</label>
-                    <input type="password" id="auth-password" placeholder="******" class="w-full p-2 border-2 border-amber-800 bg-white rounded-lg font-bold focus:outline-none">
+                    <label class="block text-amber-900 font-bold mb-1 text-sm">🔒 비밀번호</label>
+                    <input type="password" id="auth-password" placeholder="******" class="w-full p-2 border-2 border-amber-800 bg-white rounded-lg font-bold focus:outline-none text-lg">
                 </div>
                 <div>
-                    <label class="block text-amber-900 font-bold mb-1">일기장에 표시될 이름 (회원가입 시 필수)</label>
-                    <input type="text" id="username" placeholder="몽글이" class="w-full p-2 border-2 border-amber-800 bg-white rounded-lg font-bold focus:outline-none">
+                    <label class="block text-amber-900 font-bold mb-1 text-sm">🧒 일기장에 표시될 이름 (회원가입 시 필수)</label>
+                    <input type="text" id="username" placeholder="몽글이" value="몽글이" class="w-full p-2 border-2 border-amber-800 bg-white rounded-lg font-bold focus:outline-none text-lg">
                 </div>
             </div>
 
             <div class="grid grid-cols-2 gap-2 mb-3">
-                <button onclick="handleLogin()" class="bg-red-600 hover:bg-red-700 text-white text-xl font-bold py-3 rounded-xl shadow-md border-2 border-white cursor-pointer">로그인 📖</button>
-                <button onclick="handleSignUp()" class="bg-amber-700 hover:bg-amber-800 text-white text-xl font-bold py-3 rounded-xl shadow-md border-2 border-white cursor-pointer">회원가입 🎉</button>
+                <button onclick="handleLogin()" class="bg-red-600 hover:bg-red-700 text-white text-xl font-bold py-3 rounded-xl shadow-md border-2 border-white cursor-pointer transition">일기장 펼치기 📖</button>
+                <button onclick="handleSignUp()" class="bg-amber-700 hover:bg-amber-800 text-white text-xl font-bold py-3 rounded-xl shadow-md border-2 border-white cursor-pointer transition">회원등록 🎉</button>
             </div>
-
-            <button onclick="handleKakaoLogin()" class="w-full bg-yellow-300 hover:bg-yellow-400 text-yellow-950 text-xl font-bold py-3 rounded-xl shadow-md border-2 border-amber-800 flex items-center justify-center gap-2 cursor-pointer">
-                <span>💬</span> 카카오로 시작하기
-            </button>
             
+            <div class="mt-4">
+                <p class="text-amber-800 font-bold mb-2">최근 친구들</p>
+                <div id="recent-users" class="flex flex-wrap gap-2 justify-center"></div>
+            </div>
+            
+            <div id="streak-box" class="mt-4 text-lg font-bold text-red-700"></div>
             <p class="text-sm text-amber-600 mt-6 font-bold">교육부 검인정 (주)몽글출판사</p>
+            <button id="install-btn" class="hidden w-full bg-green-600 hover:bg-green-700 text-white text-xl font-bold py-2 rounded-xl border-2 border-white mt-2">📲 앱 설치하기</button>
             <button id="bgm-btn" onclick="toggleYouTubeBGM()" class="mt-3 w-full bg-red-500 hover:bg-red-600 text-white text-xl font-bold py-2 rounded-xl border-2 border-white cursor-pointer">🎵 음악 재생</button>
         </div>
     </div>
