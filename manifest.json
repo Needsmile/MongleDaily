@@ -16,3 +16,20 @@
   "background_color": "#ffffff",
   "display": "standalone"
 }
+
+"screenshots": [
+  {
+    "src": "/images/screenshot-wide.jpg",
+    "sizes": "1280x720",
+    "type": "image/jpeg",
+    "form_factor": "wide",
+    "label": "몽글 일기장 PC 화면"
+  },
+  {
+    "src": "/images/screenshot-mobile.jpg",
+    "sizes": "390x844",
+    "type": "image/jpeg",
+    "form_factor": "narrow",
+    "label": "몽글 일기장 모바일 화면"
+  }
+]
