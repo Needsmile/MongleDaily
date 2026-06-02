@@ -16,10 +16,7 @@
    
     <link rel="apple-touch-icon" sizes="180x180" href="/icon-192.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
-<<<<<<< HEAD
-
-=======
->>>>>>> 98e061b7f8b410acbe570a0967bf2a5371711dae
+    <!-- <<<<<<< HEAD=======>>>>>>> 98e061b7f8b410acbe570a0967bf2a5371711dae -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="그림일기">
    
@@ -107,6 +104,11 @@
             background-color: #fcf8ee;
             color: #78350f;
         }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(30px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
     </style>
 </head>
 <body class="p-3 md:p-6 flex flex-col items-center min-h-screen">
@@ -119,7 +121,7 @@
             
             <div class="space-y-4">
                 <input type="email" id="login-email" placeholder="이메일 (example@email.com)" class="w-full border-b-4 border-amber-800 bg-transparent text-xl text-center focus:outline-none placeholder-amber-600 font-bold tracking-wide">
-                <input type="password" id="login-password" placeholder="비밀번호 입력" class="w-full border-b-4 border-amber-800 bg-transparent text-xl text-center focus:outline-none placeholder-amber-600 font-bold tracking-wide">
+                <input type="password" id="login-password" placeholder="비밀번호 입력" class="w-full border-b-4 border-amber-800 bg-transparent text-xl text-center focus:outline-none placeholder-amber-600 font-bold tracking-wide" autocomplete="new-password">
 
                 <div class="flex gap-2 pt-2">
                     <button onclick="handleLogin()" class="w-1/2 bg-red-600 hover:bg-red-700 text-white text-xl font-bold py-3 rounded-xl shadow-md transition duration-200 border-2 border-white cursor-pointer">로그인 📖</button>
@@ -144,6 +146,7 @@
         <div class="w-full min-w-full lg:min-w-0 lg:w-1/2 retro-paper rounded-3xl p-5 shadow-2xl flex flex-col">
             <div class="flex items-center border-2 border-amber-900 bg-amber-100 bg-opacity-50 mb-4 rounded-lg overflow-hidden text-amber-900 font-bold">
                 <button onclick="goToHome()" class="px-3 py-2 bg-amber-200 hover:bg-amber-300 border-r-2 border-amber-900 text-lg font-bold whitespace-nowrap cursor-pointer">🏠</button>
+                <button onclick="openSettingsModal()" class="px-3 py-2 bg-amber-200 hover:bg-amber-300 border-r-2 border-amber-900 text-lg font-bold whitespace-nowrap cursor-pointer" title="계정 설정">⚙️</button>
                 <div id="current-date-display" class="flex-1 min-w-0 px-2 py-2 text-center whitespace-nowrap text-xs sm:text-sm md:text-lg">2026-05-27</div>
                 <div class="flex items-center justify-center px-1 py-1 bg-white border-l-2 border-amber-900" style="min-width:92px;">
                     <span class="mr-1 text-[10px] sm:text-xs whitespace-nowrap">날씨:</span>
@@ -291,24 +294,33 @@ class="w-full bg-white border-2 border-amber-900 rounded-lg shadow-inner focus:o
                 localStorage.setItem('lastLoggedInUser', userEmail); 
                 saveUserName(userEmail); 
 
-                // 해당 이메일 계정 전용으로 저장된 닉네임이 있는지 확인
-                const nicknameStorageKey = `diary_username_${userEmail}`;
-                let savedUsername = localStorage.getItem(nicknameStorageKey);
-                
-                // 닉네임이 없거나 공백이라면 올바르게 입력할 때까지 반복 팝업
-                while (!savedUsername || savedUsername.trim() === "") {
-                    savedUsername = prompt("🎨 환영합니다! 일기장에 표시될 Nickname을 정해주세요!");
-                    if (savedUsername === null) {
-                        alert("일기를 작성하고 친구들에게 보여주려면 닉네임이 꼭 필요해요! 👦");
-                        continue;
+                // ✅ Supabase 서버에서 닉네임 불러오기 (모든 기기/브라우저 동일하게 유지)
+                let savedUsername = data.user.user_metadata?.nickname || '';
+
+                // 기존에 localStorage에 저장된 닉네임이 있으면 서버로 마이그레이션 (1회)
+                if (!savedUsername) {
+                    const oldNickname = localStorage.getItem(`diary_username_${userEmail}`) || localStorage.getItem('diary_username') || '';
+                    if (oldNickname.trim()) {
+                        savedUsername = oldNickname.trim();
+                        await _supabase.auth.updateUser({ data: { nickname: savedUsername } });
+                        alert(`🎉 기존 닉네임 '${savedUsername}'을 서버에 저장했어요!\n이제 어디서 로그인해도 같은 닉네임이 유지됩니다.`);
                     }
-                    
-                    savedUsername = savedUsername.trim();
-                    if (savedUsername !== "") {
-                        localStorage.setItem(nicknameStorageKey, savedUsername);
-                        localStorage.setItem('diary_username', savedUsername); 
-                        alert(`반갑습니다, ${savedUsername}님! 오늘 하루 일기를 써봅시다. ✨`);
+                }
+
+                // 서버에도, localStorage에도 닉네임이 없으면 새로 입력 받기
+                if (!savedUsername || savedUsername.trim() === '') {
+                    while (!savedUsername || savedUsername.trim() === '') {
+                        savedUsername = prompt("🎨 환영합니다! 일기장에 표시될 닉네임을 정해주세요!");
+                        if (savedUsername === null) {
+                            alert("일기를 작성하고 친구들에게 보여주려면 닉네임이 꼭 필요해요! 👦");
+                            savedUsername = '';
+                            continue;
+                        }
+                        savedUsername = savedUsername.trim();
                     }
+                    // ✅ Supabase 서버에 저장 → 이후 모든 기기에서 자동 적용
+                    await _supabase.auth.updateUser({ data: { nickname: savedUsername } });
+                    alert(`반갑습니다, ${savedUsername}님! 오늘 하루 일기를 써봅시다. ✨`);
                 }
 
                 childName = savedUsername;
@@ -328,24 +340,27 @@ class="w-full bg-white border-2 border-amber-900 rounded-lg shadow-inner focus:o
         }
 
         // Supabase 회원가입 기능 엔진 
-        async function handleSignUp() {
+            async function handleSignUp() {
             const email = document.getElementById('login-email').value.trim();
             const password = document.getElementById('login-password').value;
 
-            if(!email || !password) return alert('가입할 이메일과 비밀번호를 채워주세요!');
-            if(password.length < 6) return alert('비밀번호는 최소 6자리 이상이어야 합니다!');
+            if (!email || !password) return showSignupModal('error', '가입할 이메일과 비밀번호를 채워주세요!');
+            if (password.length < 6) return showSignupModal('error', '비밀번호는 최소 6자리 이상이어야 합니다!');
 
             try {
+                // ✅ 인증 완료 후 이 페이지로 다시 돌아오도록 redirectTo 설정
+                const redirectTo = window.location.href.split('?')[0].split('#')[0] + '?signup_confirmed=1';
                 const { data, error } = await _supabase.auth.signUp({
                     email: email,
-                    password: password
+                    password: password,
+                    options: { emailRedirectTo: redirectTo }
                 });
                 if (error) throw error;
-                alert('✨ 회원가입 신청이 성공했습니다! 로그인 버튼을 눌러 접속해 주세요.');
+                showSignupModal('success', email);
             } catch (err) {
-                alert('🚨 회원가입 실패: ' + err.message);
+                showSignupModal('error', err.message);
             }
-        }
+    }
 
         async function initApp() {
             setupCanvas();
@@ -399,29 +414,75 @@ class="w-full bg-white border-2 border-amber-900 rounded-lg shadow-inner focus:o
         }
 
         function setupRealtimeSync() {
-            if (communityChannel) {
-                _supabase.removeChannel(communityChannel);
-            }
+    if (communityChannel) {
+        _supabase.removeChannel(communityChannel);
+    }
 
-            communityChannel = _supabase
-                .channel('schema-db-changes')
-                .on(
-                    'postgres_changes',
-                    { event: '*', pattern: 'public', table: 'diary_entries' },
-                    (payload) => {
-                        const box = document.getElementById('community-list');
-                        if (box && !box.classList.contains('hidden')) {
-                            fetchCommunityData();
-                        }
-                        if (payload.new && payload.new.username === childName) {
-                            loadDiariesFromServer().then(() => {
-                                renderCalendar();
-                                calculateStreak();
-                            });
-                        }
-                    }
-                )
-                .subscribe();
+    communityChannel = _supabase
+        .channel('schema-db-changes')
+        .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'diary_entries' }, // ✅ pattern → schema 오타 수정
+            (payload) => {
+                const box = document.getElementById('community-list');
+                if (box && !box.classList.contains('hidden')) {
+                    fetchCommunityData();
+                }
+                if (payload.new && payload.new.username === childName) {
+                    loadDiariesFromServer().then(() => {
+                        renderCalendar();
+                        calculateStreak();
+                    });
+                }
+                // ✅ 다른 친구가 일기를 새로 올리면 인앱 토스트 알림 표시
+                if (payload.eventType === 'INSERT' && payload.new && payload.new.username !== childName) {
+                    showFriendToast(payload.new.username, payload.new.diary_text);
+                }
+            }
+        )
+        .subscribe();
+}
+
+        // ✅ 버디버디 스타일 토스트 알림 함수
+        function showFriendToast(username, text) {
+            // 기존 토스트 제거
+            const existing = document.getElementById('friend-toast');
+            if (existing) existing.remove();
+
+            const toast = document.createElement('div');
+            toast.id = 'friend-toast';
+            toast.style.cssText = `
+                position: fixed; top: 16px; right: 16px; z-index: 9999;
+                background: #78350f; color: white; padding: 14px 18px;
+                border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+                max-width: 280px; border: 2px solid #fcd34d;
+                font-family: 'Gamja Flower', sans-serif; font-size: 16px;
+                animation: slideIn 0.4s ease; cursor: pointer;
+            `;
+            toast.innerHTML = `
+                <div style="display:flex;align-items:flex-start;gap:10px;">
+                    <span style="font-size:28px;">📖</span>
+                    <div>
+                        <p style="font-weight:bold;margin:0 0 2px;">🧒 ${username} 친구가</p>
+                        <p style="margin:0 0 4px;">일기를 작성했어요!</p>
+                        <p style="font-size:13px;opacity:0.8;margin:0;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${text || '그림만 그렸어요 🎨'}</p>
+                    </div>
+                </div>
+            `;
+            
+            // 클릭하면 커뮤니티 열기
+            toast.onclick = () => { toast.remove(); toggleCommunity(); };
+            
+            document.body.appendChild(toast);
+            
+            // 5초 후 자동 사라짐
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.style.opacity = '0';
+                    toast.style.transition = 'opacity 0.5s';
+                    setTimeout(() => toast.remove(), 500);
+                }
+            }, 5000);
         }
 
         async function toggleCommunity() {
@@ -455,7 +516,7 @@ class="w-full bg-white border-2 border-amber-900 rounded-lg shadow-inner focus:o
 
             data.forEach(item => {
                 const div = document.createElement('div');
-                div.className = "border-b border-amber-200 pb-2 last:border-0 hover:bg-amber-50 p-1 rounded transition-colors";
+                div.className = "border-b border-amber-200 pb-2 last:border-0 hover:bg-amber-50 p-1 rounded transition-colors cursor-pointer";
                 
                 let timeString = "방학 중";
                 if(item.created_at) {
@@ -468,9 +529,12 @@ class="w-full bg-white border-2 border-amber-900 rounded-lg shadow-inner focus:o
                         <span class="font-bold text-amber-900 text-xs truncate max-w-[150px]">🧒 ${item.username}</span>
                         <span class="text-[10px] text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded font-mono">${timeString}</span>
                     </div>
-                    <div class="text-[11px] text-gray-500 mt-0.5 font-bold">📅 지정일: ${item.diary_date} ${item.weather || ''}</div>
-                    <div class="mt-1 text-amber-950 text-sm font-semibold whitespace-pre-wrap break-all line-clamp-3">${item.diary_text || "그림만 그렸어요 🎨"}</div>
+                    <div class="text-[11px] text-gray-500 mt-0.5 font-bold">📅 ${item.diary_date} ${item.weather || ''}</div>
+                    <div class="mt-1 text-amber-950 text-sm font-semibold whitespace-pre-wrap break-all line-clamp-2">${item.diary_text || "그림만 그렸어요 🎨"}</div>
+                    <div class="text-[10px] text-amber-400 mt-0.5 font-bold">👆 눌러서 일기 보기</div>
                 `;
+                // ✅ 클릭하면 팝업 열기
+                div.onclick = () => openCommunityModal(item);
                 box.appendChild(div);
             });
         }
@@ -955,10 +1019,11 @@ async function sendPushNotificationToAll(writerName, diarySnippet) {
                 const btn = document.createElement('button');
                 btn.innerText = `🧒 ${user.split('@')[0]}`; 
                 btn.className = "px-3 py-1 bg-amber-100 hover:bg-amber-200 rounded-lg border border-amber-700 text-sm font-bold cursor-pointer";
-                btn.onclick = () => {
-                    document.getElementById('login-email').value = user;
-                    document.getElementById('login-password').focus();
-                };
+              btn.onclick = () => {
+                document.getElementById('login-email').value = user;
+                document.getElementById('login-password').value = ''; // 비밀번호 초기화
+                document.getElementById('login-password').focus();
+            };
                 container.appendChild(btn);
             });
         }
@@ -1045,6 +1110,30 @@ async function sendPushNotificationToAll(writerName, diarySnippet) {
                     initPushNotification();
                 }
             }
+            // ✅ 이메일 인증 완료 후 리다이렉트 감지
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('signup_confirmed') === '1') {
+                _supabase.auth.getSession().then(async ({ data }) => {
+                    if (data.session) await _supabase.auth.signOut();
+                });
+                window.history.replaceState({}, document.title, window.location.pathname);
+                showSignupModal('verified', '');
+            }
+
+            // ✅ 비밀번호 재설정 링크 클릭 후 처리
+            _supabase.auth.onAuthStateChange(async (event, session) => {
+                if (event === 'PASSWORD_RECOVERY') {
+                    const newPassword = prompt('🔑 새 비밀번호를 입력해 주세요 (6자리 이상):');
+                    if (newPassword && newPassword.length >= 6) {
+                        const { error } = await _supabase.auth.updateUser({ password: newPassword });
+                        if (!error) {
+                            alert('✅ 비밀번호가 변경되었어요! 새 비밀번호로 로그인해 주세요.');
+                            await _supabase.auth.signOut();
+                            window.history.replaceState({}, document.title, window.location.pathname);
+                        }
+                    }
+                }
+});
         });
 
         // 웹 푸시 서비스 워커 등록 및 권한 요청 함수
@@ -1104,6 +1193,168 @@ async function sendPushNotificationToAll(writerName, diarySnippet) {
             return outputArray;
         }
         
+        // ✅ 회원가입 모달 표시/숨김 함수
+        function showSignupModal(type, data) {
+            const modal = document.getElementById('signup-modal');
+            const icon = document.getElementById('signup-modal-icon');
+            const title = document.getElementById('signup-modal-title');
+            const message = document.getElementById('signup-modal-message');
+            
+            if (type === 'success') {
+                icon.innerText = '✉️';
+                title.innerText = '이메일을 확인해 주세요!';
+                message.innerText = `${data} 으로 인증 메일을 보냈어요.\n받은 편지함에서 링크를 눌러 회원가입을 완료해 주세요! 📬`;
+            } else if (type === 'verified') {
+                icon.innerText = '🎉';
+                title.innerText = '회원가입 완료!';
+                message.innerText = '이메일 인증이 완료되었어요! 로그인 버튼을 눌러 몽글일기를 시작해 보세요! 🎨';
+            } else {
+                icon.innerText = '⚠️';
+                title.innerText = '잠깐!';
+                message.innerText = data;
+            }
+            modal.style.display = 'flex';
+        }
+
+        function closeSignupModal() {
+            document.getElementById('signup-modal').style.display = 'none';
+        }
+
+        // ✅ 계정 설정 모달 함수들
+        function openSettingsModal() {
+            document.getElementById('current-nickname-display').innerText = childName;
+            document.getElementById('new-nickname-input').value = '';
+            document.getElementById('settings-modal').style.display = 'flex';
+        }
+
+        function closeSettingsModal() {
+            document.getElementById('settings-modal').style.display = 'none';
+        }
+
+        async function updateNickname() {
+            const newNickname = document.getElementById('new-nickname-input').value.trim();
+            if (!newNickname) return alert('새 닉네임을 입력해 주세요!');
+            if (!confirm(`닉네임을 '${newNickname}'(으)로 변경할까요?\n기존에 쓴 일기의 이름도 함께 바뀝니다.`)) return;
+
+            try {
+                const oldNickname = childName;
+                // 1. Supabase 계정 메타데이터 업데이트
+                const { error: authError } = await _supabase.auth.updateUser({ data: { nickname: newNickname } });
+                if (authError) throw authError;
+                
+                // 2. 기존 일기 데이터의 username도 업데이트
+                const { error: dbError } = await _supabase
+                    .from('diary_entries')
+                    .update({ username: newNickname })
+                    .eq('username', oldNickname);
+                if (dbError) throw dbError;
+                
+                childName = newNickname;
+                await loadDiariesFromServer();
+                renderCalendar();
+                alert(`✅ 닉네임이 '${newNickname}'(으)로 변경되었어요!`);
+                closeSettingsModal();
+            } catch (err) {
+                alert('닉네임 변경 실패: ' + err.message);
+            }
+        }
+
+        async function sendPasswordReset() {
+            try {
+                const { data: { user } } = await _supabase.auth.getUser();
+                if (!user) return alert('로그인 정보를 찾을 수 없어요.');
+                const redirectTo = window.location.href.split('?')[0].split('#')[0];
+                const { error } = await _supabase.auth.resetPasswordForEmail(user.email, { redirectTo });
+                if (error) throw error;
+                alert(`📧 ${user.email}로 비밀번호 재설정 링크를 보냈어요!\n메일함을 확인해 주세요.`);
+            } catch (err) {
+                alert('비밀번호 재설정 실패: ' + err.message);
+            }
+        }
+    
+
+            // ✅ 친구 일기 팝업 함수
+        function openCommunityModal(item) {
+            document.getElementById('community-modal-name').innerText = `🧒 ${item.username}의 일기`;
+            document.getElementById('community-modal-date').innerText = `📅 ${item.diary_date}`;
+            document.getElementById('community-modal-weather').innerText = item.weather || '☀️';
+            document.getElementById('community-modal-text').innerText = item.diary_text || '';
+            
+            const img = document.getElementById('community-modal-image');
+            if (item.image_data) {
+                img.src = item.image_data;
+                img.style.display = 'block';
+            } else {
+                img.style.display = 'none';
+            }
+            document.getElementById('community-modal').style.display = 'flex';
+        }
+
+        function closeCommunityModal() {
+            document.getElementById('community-modal').style.display = 'none';
+        }
     </script>
+    <!-- ✅ 회원가입 안내 모달 (새로 추가) -->
+    <div id="signup-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center p-4 z-50">
+        <div class="retro-paper rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl">
+            <div id="signup-modal-icon" class="text-6xl mb-4">✉️</div>
+            <h2 id="signup-modal-title" class="text-3xl font-bold text-amber-900 mb-3">이메일을 확인해 주세요!</h2>
+            <p id="signup-modal-message" class="text-amber-800 font-bold mb-6 leading-relaxed text-lg"></p>
+            <button onclick="closeSignupModal()" class="w-full bg-amber-700 hover:bg-amber-800 text-white text-xl font-bold py-3 rounded-xl cursor-pointer border-2 border-white">확인 ✓</button>
+        </div>
+    </div>
+    <!-- ✅ 계정 설정 모달 (새로 추가) -->
+    <div id="settings-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center p-4 z-50">
+        <div class="retro-paper rounded-3xl p-6 max-w-sm w-full shadow-2xl">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-amber-900">⚙️ 계정 설정</h2>
+                <button onclick="closeSettingsModal()" class="text-4xl text-amber-900 font-bold leading-none cursor-pointer">×</button>
+            </div>
+            
+            <!-- 닉네임 변경 -->
+            <div class="bg-amber-50 border-2 border-amber-800 rounded-xl p-4 mb-4">
+                <p class="text-amber-900 font-bold mb-1">✏️ 닉네임 변경</p>
+                <p class="text-sm text-amber-700 mb-3">현재: <span id="current-nickname-display" class="font-black text-amber-900"></span></p>
+                <input type="text" id="new-nickname-input" placeholder="새 닉네임 입력" maxlength="12"
+                    class="w-full border-b-2 border-amber-800 bg-transparent text-lg font-bold focus:outline-none placeholder-amber-400 mb-3">
+                <button onclick="updateNickname()" 
+                    class="w-full bg-amber-700 hover:bg-amber-800 text-white font-bold py-2 rounded-lg cursor-pointer border-2 border-white">변경하기</button>
+            </div>
+            
+            <!-- 비밀번호 재설정 -->
+            <div class="bg-amber-50 border-2 border-amber-800 rounded-xl p-4">
+                <p class="text-amber-900 font-bold mb-1">🔑 비밀번호 재설정</p>
+                <p class="text-sm text-amber-700 mb-3">가입한 이메일로 재설정 링크를 보내드려요.</p>
+                <button onclick="sendPasswordReset()" 
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg cursor-pointer border-2 border-white">📧 재설정 이메일 받기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ✅ 친구 일기 상세보기 모달 (새로 추가) -->
+    <div id="community-modal" class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center p-4 z-50">
+        <div class="retro-paper rounded-3xl p-6 max-w-md w-full relative">
+            <div class="flex justify-end mb-2">
+                <button onclick="closeCommunityModal()" class="text-4xl leading-none font-bold text-amber-900 hover:scale-110 transition-transform cursor-pointer">×</button>
+            </div>
+            <div class="flex justify-between items-center border-b-2 border-amber-900 pb-2 mb-4 font-bold text-amber-950">
+                <div>
+                    <p id="community-modal-name" class="text-base text-amber-700 font-bold"></p>
+                    <p id="community-modal-date" class="text-xl"></p>
+                </div>
+                <span id="community-modal-weather" class="text-3xl"></span>
+            </div>
+            <div class="bg-white p-2 border-2 border-gray-300 rounded-xl mb-4">
+                <img id="community-modal-image" class="w-full h-48 object-contain rounded-lg bg-gray-50" src="" alt="그림">
+            </div>
+            <div class="relative">
+                <p id="community-modal-text" class="bg-white rounded-xl border-2 border-amber-900 shadow-inner whitespace-pre-wrap kakdugi-notebook overflow-y-auto" style="height: 160px;"></p>
+                <div class="absolute -bottom-4 -right-2 retro-stamp rounded-full p-2 text-center w-24 h-24 flex flex-col items-center justify-center font-black text-xs border-double">
+                    <span class="text-lg">💮</span>참잘했어요
+                </div>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>
