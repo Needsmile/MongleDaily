@@ -1,0 +1,103 @@
+/* 기본 테마 및 감자꽃 폰트 매핑 */
+body {
+    font-family: 'Gamja Flower', sans-serif;
+    background-color: #2b4436; 
+}
+
+/* 레트로 서류 가공 선언 */
+.retro-paper {
+    background-color: #fcf8ee;
+    border: 8px double #8b5a2b;
+}
+
+/* 동적 반응형 공책 깍두기 엔진 설정 */
+.kakdugi-notebook {
+    font-size: clamp(18px, 5vw, 26px);
+    line-height: 1.8;
+    letter-spacing: 0.08em;
+    padding: 14px;
+    background-attachment: local;
+    background-image: 
+       linear-gradient(to right, rgba(239, 68, 68, 0.15) 1px, transparent 1px),
+       linear-gradient(to bottom, rgba(239, 68, 68, 0.15) 1px, transparent 1px);
+    background-size: 2.2em 2.2em;
+    background-position: 0.4em 0.2em;
+    font-weight: bold;
+    color: #2d3748;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+}
+
+@media (min-width: 1024px) {
+    .kakdugi-notebook {
+        font-size: 24px;
+        line-height: 36px;
+        letter-spacing: 12px;
+        padding: 14px 12px;
+        background-size: 36px 36px;
+        background-position: 8px 4px;
+    }
+}
+
+/* 모달 내부 강제 주입형 깍두기 오버라이딩 */
+#modal-text.kakdugi-notebook {
+    font-size: clamp(16px, 4vw, 22px) !important;
+    line-height: 1.8 !important;
+    letter-spacing: 0.08em !important;
+    padding: 14px !important;
+    background-size: 2.2em 2.2em !important;
+    background-position: 0.4em 0.2em !important;
+    word-break: keep-all !important;
+    overflow-wrap: break-word !important;
+}
+@media (min-width: 1024px) {
+    #modal-text.kakdugi-notebook {
+        font-size: 20px !important;
+        line-height: 36px !important;
+        letter-spacing: 16px !important;
+        padding: 14px 12px !important;
+        background-size: 36px 36px !important;
+        background-position: 8px 4px !important;
+    }
+}
+
+/* 데코레이션 요소 요소 기술 */
+.retro-stamp {
+    border: 3px dashed #ef4444;
+    color: #ef4444;
+    transform: rotate(-5deg);
+    text-shadow: 1px 1px 0px rgba(255,255,255,0.8);
+}
+
+#weather {
+    font-family: 'Gamja Flower', sans-serif;
+    box-shadow: inset 1px 1px 2px rgba(0,0,0,0.08);
+}
+#weather:hover {
+    background-color: #fef3c7;
+}
+#weather option {
+    background-color: #fcf8ee;
+    color: #78350f;
+}
+
+/* 기타 유틸리티 컴포넌트 */
+.min-width-weather {
+    min-width: 92px;
+}
+.custom-textarea-height {
+    height: 200px;
+}
+.custom-modal-text-height {
+    height: 160px;
+}
+.youtube-audio-hide {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 1px;
+    height: 1px;
+    opacity: 0.01;
+    pointer-events: none;
+    z-index: -999;
+}

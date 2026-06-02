@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>초등학교 여름방학 그림일기</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Gamja+Flower&display=swap" rel="stylesheet">
+    
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#2b4436">
+   
+    <link rel="apple-touch-icon" sizes="180x180" href="/icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="그림일기">
+   
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        body {
+            font-family: 'Gamja Flower', sans-serif;
+            background-color: #2b4436; 
+        }
+        
+        .retro-paper {
+            background-color: #fcf8ee;
+            border: 8px double #8b5a2b;
+        }
+
+        .kakdugi-notebook {
+            font-size: clamp(18px, 5vw, 26px);
+            line-height: 1.8;
+            letter-spacing: 0.08em;
+            padding: 14px;
+            background-attachment: local;
+            background-image: 
+               linear-gradient(to right, rgba(239, 68, 68, 0.15) 1px, transparent 1px),
+               linear-gradient(to bottom, rgba(239, 68, 68, 0.15) 1px, transparent 1px);
+            background-size: 2.2em 2.2em;
+            background-position: 0.4em 0.2em;
+            font-weight: bold;
+            color: #2d3748;
+            word-break: keep-all;
+            overflow-wrap: break-word;
+        }
+
+        @media (min-width: 1024px) {
+            .kakdugi-notebook {
+                font-size: 24px;
+                line-height: 36px;
+                letter-spacing: 12px;
+                padding: 14px 12px;
+                background-size: 36px 36px;
+                background-position: 8px 4px;
+            }
+        }
+
+        #modal-text.kakdugi-notebook {
+            font-size: clamp(16px, 4vw, 22px) !important;
+            line-height: 1.8 !important;
+            letter-spacing: 0.08em !important;
+            padding: 14px !important;
+            background-size: 2.2em 2.2em !important;
+            background-position: 0.4em 0.2em !important;
+            word-break: keep-all !important;
+            overflow-wrap: break-word !important;
+        }
+        @media (min-width: 1024px) {
+            #modal-text.kakdugi-notebook {
+                font-size: 20px !important;
+                line-height: 36px !important;
+                letter-spacing: 16px !important;
+                padding: 14px 12px !important;
+                background-size: 36px 36px !important;
+                background-position: 8px 4px !important;
+            }
+        }
+
+        .retro-stamp {
+            border: 3px dashed #ef4444;
+            color: #ef4444;
+            transform: rotate(-5deg);
+            text-shadow: 1px 1px 0px rgba(255,255,255,0.8);
+        }
+
+        #weather {
+            font-family: 'Gamja Flower', sans-serif;
+            box-shadow: inset 1px 1px 2px rgba(0,0,0,0.08);
+        }
+
+        #weather:hover {
+            background-color: #fef3c7;
+        }
+
+        #weather option {
+            background-color: #fcf8ee;
+            color: #78350f;
+        }
+    </style>
+</head>
+<body class="p-3 md:p-6 flex flex-col items-center min-h-screen">
+
+    <div id="login-section" class="w-full max-w-md retro-paper rounded-2xl p-8 shadow-2xl text-center my-auto">
+        <div class="border-4 border-double border-amber-800 p-4 rounded-xl bg-yellow-50 bg-opacity-50">
+            <h1 class="text-5xl font-bold text-amber-900 mb-1">여름방학</h1>
+            <h2 class="text-4xl font-bold text-amber-800 mb-6">🎨 그림일기장 🎨</h2>
+            <p class="text-lg text-amber-700 font-bold mb-4">등록된 이메일과 비밀번호를 적어주세요</p>
+            
+            <div class="space-y-4">
+                <input type="email" id="login-email" placeholder="이메일 (example@email.com)" class="w-full border-b-4 border-amber-800 bg-transparent text-xl text-center focus:outline-none placeholder-amber-600 font-bold tracking-wide">
+                <input type="password" id="login-password" placeholder="비밀번호 입력" class="w-full border-b-4 border-amber-800 bg-transparent text-xl text-center focus:outline-none placeholder-amber-600 font-bold tracking-wide">
+
+                <div class="flex gap-2 pt-2">
+                    <button onclick="handleLogin()" class="w-1/2 bg-red-600 hover:bg-red-700 text-white text-xl font-bold py-3 rounded-xl shadow-md transition duration-200 border-2 border-white cursor-pointer">로그인 📖</button>
+                    <button onclick="handleSignUp()" class="w-1/2 bg-yellow-700 hover:bg-yellow-800 text-white text-xl font-bold py-3 rounded-xl shadow-md transition duration-200 border-2 border-white cursor-pointer">회원가입 ✨</button>
+                </div>
+                
+                <div class="mt-4">
+                    <p class="text-amber-800 font-bold mb-2">최근 접속 계정</p>
+                    <div id="recent-users" class="flex flex-wrap gap-2 justify-center"></div>
+                </div>
+            </div>
+          
+            <div id="streak-box" class="mt-4 text-lg font-bold text-red-700"></div>
+            <p class="text-sm text-amber-600 mt-6 font-bold">교육부 검인정 (주)몽글출판사</p>
+            <button id="install-btn" class="hidden w-full bg-green-600 hover:bg-green-700 text-white text-xl font-bold py-2 rounded-xl border-2 border-white mt-2">📲 앱 설치하기</button>
+            <button id="bgm-btn" onclick="toggleYouTubeBGM()" class="mt-3 w-full bg-red-500 hover:bg-red-600 text-white text-xl font-bold py-2 rounded-xl border-2 border-white cursor-pointer">🎵 음악 재생</button>
+        </div>
+    </div>
+
+    <div id="main-app" class="w-full max-w-6xl hidden flex lg:flex-row gap-6 items-stretch overflow-x-auto snap-x snap-mandatory">
+        
+        <div class="w-full min-w-full lg:min-w-0 lg:w-1/2 retro-paper rounded-3xl p-5 shadow-2xl flex flex-col">
+            <div class="flex items-center border-2 border-amber-900 bg-amber-100 bg-opacity-50 mb-4 rounded-lg overflow-hidden text-amber-900 font-bold">
+                <button onclick="goToHome()" class="px-3 py-2 bg-amber-200 hover:bg-amber-300 border-r-2 border-amber-900 text-lg font-bold whitespace-nowrap cursor-pointer">🏠</button>
+                <div id="current-date-display" class="flex-1 min-w-0 px-2 py-2 text-center whitespace-nowrap text-xs sm:text-sm md:text-lg">2026-05-27</div>
+                <div class="flex items-center justify-center px-1 py-1 bg-white border-l-2 border-amber-900" style="min-width:92px;">
+                    <span class="mr-1 text-[10px] sm:text-xs whitespace-nowrap">날씨:</span>
+                    <select id="weather" class="bg-amber-200 hover:bg-amber-300 text-amber-900 text-sm sm:text-base md:text-lg font-bold border-2 border-amber-800 rounded-md px-1 py-0.5 focus:outline-none cursor-pointer appearance-none transition-colors">
+                        <option value="☀️">☀️ 맑음</option>
+                        <option value="☁️">☁️ 흐림</option>
+                        <option value="☔">☔ 비옴</option>
+                        <option value="⚡">⚡ 천둥</option>
+                        <option value="☃️">☃️ 눈옴</option>
+                    </select>
+                    <button id="sound-toggle" onclick="toggleSound()" class="ml-1 px-2 py-1 bg-amber-200 hover:bg-amber-300 border-2 border-amber-800 rounded-md text-sm font-bold cursor-pointer">🔊</button>
+                </div>
+            </div>
+
+            <div class="flex w-full mb-2 border-2 border-amber-800 rounded-lg overflow-hidden text-lg font-bold">
+                <button id="tab-photo-btn" onclick="switchUploadMethod('photo')" class="w-1/2 py-2 bg-amber-200 text-black font-bold transition-colors cursor-pointer">📸 사진 첨부하기</button>
+                <button id="tab-draw-btn" onclick="switchUploadMethod('draw')" class="w-1/2 py-2 bg-amber-50 text-gray-500 font-bold transition-colors cursor-pointer">✏️ 직접 그림그리기</button>
+            </div>
+
+            <div class="border-4 border-solid border-amber-900 bg-white h-64 flex flex-col items-center justify-center relative overflow-hidden mb-4 shadow-inner rounded-md">
+                <div id="photo-upload-container" class="absolute inset-0 flex flex-col items-center justify-center">
+                    <input type="file" id="image-input" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" onchange="previewImage(event)">
+                    <div id="upload-placeholder" class="text-center text-gray-400 p-4">
+                        <span class="text-5xl block mb-1">📷</span>
+                        <p class="text-lg font-bold">여기를 눌러 폰카 사진이나<br>앨범 이미지를 올려주세요</p>
+                    </div>
+                </div>
+
+                <div id="drawing-board-container" class="absolute inset-0 hidden flex flex-col bg-white">
+                    <div class="flex items-center justify-between p-1 bg-amber-50 border-b border-amber-900 z-10">
+                        <div class="flex space-x-1 items-center">
+                            <input type="color" id="brush-color" value="#000000" class="w-8 h-6 border cursor-pointer">
+                            <select id="brush-size" class="text-sm font-bold border border-gray-400 rounded">
+                                <option value="3">✏️ 가늘게</option>
+                                <option value="6" selected>🖌️ 보통</option>
+                                <option value="12">🖍️ 두껍게</option>
+                            </select>
+                        </div>
+                        <button onclick="clearCanvas()" class="px-2 py-0.5 bg-red-100 hover:bg-red-200 text-red-700 border border-red-400 rounded text-sm font-bold cursor-pointer">🧼 전부 지우기</button>
+                    </div>
+                    <canvas id="paintCanvas" class="w-full flex-grow cursor-crosshair touch-none"></canvas>
+                </div>
+
+                <img id="image-preview" class="w-full h-full object-contain hidden pointer-events-none z-20 bg-white" alt="최종그림">
+                <button id="reset-media-btn" onclick="resetMediaSelection()" class="absolute bottom-2 right-2 hidden z-30 px-3 py-1 bg-gray-800 text-white text-sm font-bold rounded-lg opacity-80 hover:opacity-100 cursor-pointer">다시 고르기 ↺</button>
+            </div>
+
+            <textarea id="diary-text" rows="5" placeholder="오늘 하루는 무엇을 하고 놀았는지 깍두기 칸에 차근차근 적어봅시다."
+class="w-full bg-white border-2 border-amber-900 rounded-lg shadow-inner focus:outline-none resize-none kakdugi-notebook flex-grow" style="height: 200px;"></textarea>
+            <button onclick="saveDiary()" class="mt-4 bg-red-600 hover:bg-red-700 text-white text-2xl font-bold py-2 rounded-xl shadow-lg transition duration-200 border-2 border-white tracking-wider cursor-pointer">💮 참 잘했어요 도장 찍기</button>
+        </div>
+
+        <div class="w-full lg:w-1/2 min-w-full lg:min-w-0 snap-center retro-paper rounded-3xl p-5 shadow-2xl flex flex-col justify-between bg-yellow-50 bg-opacity-30">
+            <div>
+                <div class="flex justify-between items-center border-b-4 border-amber-900 pb-2 mb-4">
+                    <button onclick="changeMonth(-1)" class="text-2xl font-bold text-amber-900 hover:scale-120 px-2 cursor-pointer">◀</button>
+                    <h2 class="text-xl sm:text-2xl md:text-3xl font-bold text-amber-900 tracking-normal sm:tracking-widest whitespace-nowrap text-center flex-grow" id="calendar-month-year">2026년 5월 월간 도장표</h2>
+                    <button onclick="changeMonth(1)" class="text-2xl font-bold text-amber-900 hover:scale-120 px-2 cursor-pointer">▶</button>
+                </div>
+
+                <div class="grid grid-cols-7 text-center font-bold text-lg mb-2 text-amber-950 bg-amber-200 bg-opacity-50 py-1 rounded">
+                    <div class="text-red-600">일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div class="text-blue-600">토</div>
+                </div>
+                <div class="grid grid-cols-7 gap-2" id="calendar-days"></div>
+            </div>
+
+            <div class="mt-4">
+                <button onclick="toggleCommunity()" class="w-full bg-amber-200 hover:bg-amber-300 border-2 border-amber-800 rounded-xl py-2 text-xl font-bold text-amber-900 cursor-pointer">🌎 친구들 일기 구경하기</button>
+                <div id="community-list" class="hidden mt-3 bg-white border-2 border-amber-800 rounded-xl p-3 max-h-60 overflow-y-auto space-y-3"></div>
+            </div>
+        
+            <div class="mt-4 p-3 bg-white border-2 border-amber-800 rounded-xl text-center font-bold text-amber-900 text-sm">
+                🎉 축하합니다! 이제 작성하신 일기는 데이터베이스에 안전하게 저장됩니다.
+            </div>
+        </div>
+    </div>
+
+    <div id="diary-modal" class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center p-4 z-50">
+        <div class="retro-paper rounded-3xl p-6 max-w-md w-full relative">
+            <div class="flex justify-between items-center mb-4 gap-2">
+                <div class="flex gap-2">
+                    <button onclick="editDiary()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg font-bold text-sm cursor-pointer">수정</button>
+                    <button onclick="deleteDiary()" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg font-bold text-sm cursor-pointer">삭제</button>
+                </div>
+                <button onclick="closeModal()" class="text-4xl leading-none font-bold text-amber-900 hover:scale-110 transition-transform cursor-pointer">×</button>
+            </div>
+
+            <div class="flex justify-between items-center border-b-2 border-amber-900 pb-2 mb-4 font-bold text-amber-950 text-xl">
+                <h3 id="modal-date">날짜</h3>
+                <span id="modal-weather" class="text-2xl">☀️</span>
+            </div>
+
+            <div class="bg-white p-2 border-2 border-gray-300 rounded-xl mb-4">
+                <img id="modal-image" class="w-full h-48 object-contain rounded-lg bg-gray-50" src="" alt="그림">
+            </div>
+
+            <div class="relative">
+                <p id="modal-text" class="bg-white rounded-xl border-2 border-amber-900 shadow-inner whitespace-pre-wrap kakdugi-notebook" style="height: 160px;"></p>
+                <div class="absolute -bottom-4 -right-2 retro-stamp rounded-full p-2 text-center w-24 h-24 flex flex-col items-center justify-center font-black text-xs border-double">
+                    <span class="text-lg">💮</span>참잘했어요
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="youtube-bgm" style="position:fixed; bottom:0; left:0; width:1px; height:1px; opacity:0.01; pointer-events:none; z-index:-999;">
+        <iframe id="youtube-player" width="1" height="1" src="" frameborder="0" allow="autoplay; encrypted-media"></iframe>
+    </div>
+
+    <script>
+        const SUPABASE_URL = "https://llkgofkkhuictscodsll.supabase.co"; 
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxsa2dvZmtraHVpY3RzY29kc2xsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3OTA0NDIsImV4cCI6MjA5NTM2NjQ0Mn0.DKymADB196pxaqQnrv6HDW7Ek6xItCWqkrAOOI8xT_s"; 
+
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let currentDate = new Date();
+        let selectedImageData = ""; 
+        let currentMode = "photo"; 
+        let diaryDatabase = {}; 
+        let childName = ""; 
+        let selectedDiaryDate = "";
+        let isDirty = false;
+        let openedModalDate = "";
+        let autoSaveTimer = null;
+        let soundEnabled = true;
+        let communityChannel = null;
+
+        const stampSound = new Audio('stamp.mp3');
+        let canvas, ctx, isDrawing = false;
+
+        // Supabase 이메일 로그인 처리 엔진
+        async function handleLogin() {
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+
+            if(!email || !password) return alert('이메일과 비밀번호를 모두 입력해 주세요! 👦');
+            try {
+                const { data, error } = await _supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+                if (error) throw error;
+
+                const userEmail = data.user.email;
+                localStorage.setItem('lastLoggedInUser', userEmail); 
+                saveUserName(userEmail); 
+
+                // 해당 이메일 계정 전용으로 저장된 닉네임이 있는지 확인
+                const nicknameStorageKey = `diary_username_${userEmail}`;
+                let savedUsername = localStorage.getItem(nicknameStorageKey);
+                
+                // 닉네임이 없거나 공백이라면 올바르게 입력할 때까지 반복 팝업
+                while (!savedUsername || savedUsername.trim() === "") {
+                    savedUsername = prompt("🎨 환영합니다! 일기장에 표시될 Nickname을 정해주세요!");
+                    if (savedUsername === null) {
+                        alert("일기를 작성하고 친구들에게 보여주려면 닉네임이 꼭 필요해요! 👦");
+                        continue;
+                    }
+                    
+                    savedUsername = savedUsername.trim();
+                    if (savedUsername !== "") {
+                        localStorage.setItem(nicknameStorageKey, savedUsername);
+                        localStorage.setItem('diary_username', savedUsername); 
+                        alert(`반갑습니다, ${savedUsername}님! 오늘 하루 일기를 써봅시다. ✨`);
+                    }
+                }
+
+                childName = savedUsername;
+                diaryDatabase = {};
+                
+                document.getElementById('login-section').style.display = 'none';
+                const mainApp = document.getElementById('main-app');
+                mainApp.style.display = 'flex';
+                mainApp.classList.remove('hidden');
+                
+                selectedDiaryDate = getFormattedDate(new Date());
+                initApp();
+            } catch (err) {
+                console.error("로그인 에러:", err.message);
+                alert('🚨 로그인에 실패했습니다: ' + err.message);
+            }
+        }
+
+        // Supabase 회원가입 기능 엔진 
+        async function handleSignUp() {
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+
+            if(!email || !password) return alert('가입할 이메일과 비밀번호를 채워주세요!');
+            if(password.length < 6) return alert('비밀번호는 최소 6자리 이상이어야 합니다!');
+
+            try {
+                const { data, error } = await _supabase.auth.signUp({
+                    email: email,
+                    password: password
+                });
+                if (error) throw error;
+                alert('✨ 회원가입 신청이 성공했습니다! 로그인 버튼을 눌러 접속해 주세요.');
+            } catch (err) {
+                alert('🚨 회원가입 실패: ' + err.message);
+            }
+        }
+
+        async function initApp() {
+            setupCanvas();
+            const savedSound = localStorage.getItem('soundEnabled');
+            if(savedSound !== null) {
+                soundEnabled = savedSound === 'true';
+            }
+            document.getElementById('sound-toggle').innerText = soundEnabled ? '🔊' : '🔇';
+            
+            // [보완] 요소 존재유무 예외 필터링 추가
+            const diaryInput = document.getElementById('diary-text');
+            if(diaryInput) {
+                diaryInput.addEventListener('input', () => {
+                    isDirty = true;
+                    clearTimeout(autoSaveTimer);
+                    if(diaryInput.value.length > 5) {
+                        autoSaveTimer = setTimeout(() => { saveDiary(true); }, 3000);
+                    }
+                });
+            }
+
+            document.getElementById('weather').addEventListener('change', () => { isDirty = true; });
+            await loadDiariesFromServer();
+            renderTodayForm();
+            renderCalendar();
+            calculateStreak();
+            setupRealtimeSync(); 
+        }
+
+        async function loadDiariesFromServer() {
+            try {
+                const { data, error } = await _supabase
+                    .from('diary_entries')
+                    .select('*')
+                    .eq('username', childName);
+                if (error) throw error;
+                diaryDatabase = {};
+                if(data) {
+                    data.forEach(item => {
+                        diaryDatabase[item.diary_date] = {
+                            text: item.diary_text,
+                            weather: item.weather,
+                            image: item.image_data,
+                            name: item.username
+                        };
+                    });
+                }
+            } catch (err) {
+                console.error("서버 데이터 로드 실패:", err.message);
+            }
+        }
+
+        function setupRealtimeSync() {
+            if (communityChannel) {
+                _supabase.removeChannel(communityChannel);
+            }
+
+            communityChannel = _supabase
+                .channel('schema-db-changes')
+                .on(
+                    'postgres_changes',
+                    { event: '*', pattern: 'public', table: 'diary_entries' },
+                    (payload) => {
+                        const box = document.getElementById('community-list');
+                        if (box && !box.classList.contains('hidden')) {
+                            fetchCommunityData();
+                        }
+                        if (payload.new && payload.new.username === childName) {
+                            loadDiariesFromServer().then(() => {
+                                renderCalendar();
+                                calculateStreak();
+                            });
+                        }
+                    }
+                )
+                .subscribe();
+        }
+
+        async function toggleCommunity() {
+            const box = document.getElementById('community-list');
+            if (!box.classList.contains('hidden')) {
+                box.classList.add('hidden');
+                return;
+            }
+            box.classList.remove('hidden');
+            await fetchCommunityData();
+        }
+
+        async function fetchCommunityData() {
+            const box = document.getElementById('community-list');
+            box.innerHTML = "<div class='text-center p-2 text-gray-400 font-bold animate-pulse'>⚡ 실시간 전송 주파수 수신 중...</div>";
+            const { data, error } = await _supabase
+                .from('diary_entries')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(20);
+            if (error) {
+                box.innerHTML = "<div class='text-red-500 font-bold text-center'>불러오기 실패</div>";
+                return;
+            }
+
+            box.innerHTML = "";
+            if(data.length === 0) {
+                box.innerHTML = "<div class='text-gray-400 text-center py-4'>아직 작성된 친구들 일기가 없어요.</div>";
+                return;
+            }
+
+            data.forEach(item => {
+                const div = document.createElement('div');
+                div.className = "border-b border-amber-200 pb-2 last:border-0 hover:bg-amber-50 p-1 rounded transition-colors";
+                
+                let timeString = "방학 중";
+                if(item.created_at) {
+                    const d = new Date(item.created_at);
+                    timeString = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+                }
+
+                div.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-amber-900 text-xs truncate max-w-[150px]">🧒 ${item.username}</span>
+                        <span class="text-[10px] text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded font-mono">${timeString}</span>
+                    </div>
+                    <div class="text-[11px] text-gray-500 mt-0.5 font-bold">📅 지정일: ${item.diary_date} ${item.weather || ''}</div>
+                    <div class="mt-1 text-amber-950 text-sm font-semibold whitespace-pre-wrap break-all line-clamp-3">${item.diary_text || "그림만 그렸어요 🎨"}</div>
+                `;
+                box.appendChild(div);
+            });
+        }
+
+        function switchUploadMethod(mode) {
+            currentMode = mode;
+            const photoTab = document.getElementById('tab-photo-btn');
+            const drawTab = document.getElementById('tab-draw-btn');
+            const photoContainer = document.getElementById('photo-upload-container');
+            const drawContainer = document.getElementById('drawing-board-container');
+            const activeClass = "w-1/2 py-2 bg-amber-200 text-black font-bold transition-colors cursor-pointer";
+            const inactiveClass = "w-1/2 py-2 bg-amber-50 text-gray-500 font-bold transition-colors cursor-pointer";
+            if(mode === 'photo') {
+                photoTab.className = activeClass;
+                drawTab.className = inactiveClass;
+                photoContainer.classList.remove('hidden');
+                drawContainer.classList.add('hidden');
+            } else {
+                drawTab.className = activeClass;
+                photoTab.className = inactiveClass;
+                drawContainer.classList.remove('hidden');
+                photoContainer.classList.add('hidden');
+                resizeCanvas();
+            }
+        }
+
+        function setupCanvas() {
+            canvas = document.getElementById('paintCanvas');
+            ctx = canvas.getContext('2d');
+            
+            canvas.addEventListener('mousedown', startDrawing);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDrawing);
+            canvas.addEventListener('mouseout', stopDrawing);
+
+            canvas.addEventListener('touchstart', startDrawingTouch);
+            canvas.addEventListener('touchmove', drawTouch);
+            canvas.addEventListener('touchend', stopDrawing);
+        }
+
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight - 34;
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function clearCanvas() {
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function startDrawing(e) { isDrawing = true; ctx.beginPath(); ctx.moveTo(e.offsetX, e.offsetY); }
+        function draw(e) {
+            if (!isDrawing) return;
+            ctx.lineWidth = document.getElementById('brush-size').value;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = document.getElementById('brush-color').value;
+            ctx.lineTo(e.offsetX, e.offsetY);
+            ctx.stroke();
+        }
+        function startDrawingTouch(e) {
+            isDrawing = true;
+            const touch = e.touches[0];
+            const rect = canvas.getBoundingClientRect();
+            ctx.beginPath();
+            ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
+            e.preventDefault();
+        }
+        function drawTouch(e) {
+            if (!isDrawing) return;
+            const touch = e.touches[0];
+            const rect = canvas.getBoundingClientRect();
+            ctx.lineWidth = document.getElementById('brush-size').value;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = document.getElementById('brush-color').value;
+            ctx.lineTo(touch.clientX - rect.left, touch.clientY - rect.top);
+            ctx.stroke();
+            e.preventDefault();
+        }
+        function stopDrawing() { isDrawing = false; }
+
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = function() {
+                        const compCanvas = document.createElement('canvas');
+                        const compCtx = compCanvas.getContext('2d');
+                        const max_width = 500; 
+                        const scale = max_width / img.width;
+                        compCanvas.width = max_width;
+                        compCanvas.height = img.height * scale;
+                        compCtx.drawImage(img, 0, 0, compCanvas.width, compCanvas.height);
+                        
+                        selectedImageData = compCanvas.toDataURL('image/jpeg', 0.7); 
+                        showFinalPreview(selectedImageData);
+                    }
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function showFinalPreview(dataUrl) {
+            const preview = document.getElementById('image-preview');
+            preview.src = dataUrl;
+            preview.classList.remove('hidden');
+            document.getElementById('reset-media-btn').classList.remove('hidden');
+        }
+
+        function resetMediaSelection() {
+            selectedImageData = "";
+            document.getElementById('image-preview').classList.add('hidden');
+            document.getElementById('reset-media-btn').classList.add('hidden');
+            document.getElementById('image-input').value = "";
+            if (canvas) clearCanvas();
+        }
+
+       // [교정 및 보완 좌표: saveDiary 함수 전체 교체]
+async function saveDiary(silent = false) {
+    let imageUrl = "";
+    let fileName = ""; 
+    
+    const dateStr = selectedDiaryDate;
+    const text = document.getElementById('diary-text').value;
+    const weather = document.getElementById('weather').value;
+
+    if(currentMode === 'draw' && !selectedImageData) {
+        const thumbCanvas = document.createElement('canvas');
+        const thumbCtx = thumbCanvas.getContext('2d');
+        thumbCanvas.width = 300;
+        thumbCanvas.height = (300 / canvas.width) * canvas.height;
+        thumbCtx.drawImage(canvas, 0, 0, thumbCanvas.width, thumbCanvas.height);
+        selectedImageData = thumbCanvas.toDataURL('image/jpeg', 0.5);
+    }
+
+    if(!text && !selectedImageData) {
+        if(!silent) alert('내용이나 그림을 작성해 주세요!');
+        return;
+    }
+
+    try {
+  if (selectedImageData && selectedImageData.startsWith('data:')) {
+    // 1. 기존의 childName을 참조하던 로직을 완전히 삭제
+    // 2. 오직 타임스탬프와 랜덤 숫자만 사용하여 한글 유입을 원천 차단
+    const timestamp = Date.now();
+    const randomSuffix = Math.floor(Math.random() * 10000);
+    fileName = `diary_${timestamp}_${randomSuffix}.jpg`; 
+
+    const base64Data = selectedImageData.split(',')[1];
+            const byteCharacters = atob(base64Data);
+            const byteNumbers = new Array(byteCharacters.length);
+            for (let i = 0; i < byteCharacters.length; i++) {
+                byteNumbers[i] = byteCharacters.charCodeAt(i);
+            }
+            const byteArray = new Uint8Array(byteNumbers);
+            const blob = new Blob([byteArray], { type: 'image/jpeg' });
+
+            const { error: uploadError } = await _supabase.storage
+                .from('Mongle_Daily')
+                .upload(fileName, blob, { contentType: 'image/jpeg', upsert: true });
+            if(uploadError) throw uploadError;
+
+            const { data: publicUrlData } = _supabase.storage
+                .from('Mongle_Daily')
+                .getPublicUrl(fileName);
+            imageUrl = publicUrlData.publicUrl;
+            
+        } else if (selectedImageData) {
+            imageUrl = selectedImageData;
+        }
+
+        const { error } = await _supabase
+            .from('diary_entries')
+            .upsert({
+                diary_date: dateStr,
+                username: childName,  
+                weather: weather,
+                diary_text: text,
+                image_data: imageUrl
+            }, 
+            { onConflict: 'username,diary_date' });
+        if (error) throw error;
+
+        diaryDatabase[dateStr] = {
+            text: text,
+            weather: weather,
+            image: imageUrl,
+            name: childName
+        };
+
+        // ----------------------------------------------------
+        // 🚀 [추가 및 연동] 일기 저장 성공 직후 전체 푸시 알림 발송 트리거 가동
+        // ----------------------------------------------------
+        // 유저 화면 흐름이 끊기지 않게 await를 붙이지 않고 비동기로 호출합니다.
+        sendPushNotificationToAll(childName, text || "그림만 그렸어요 🎨");
+        // ----------------------------------------------------
+
+        if(!silent) {
+            if(soundEnabled) {
+                stampSound.currentTime = 0;
+                stampSound.play().catch(() => {});
+            }
+            alert('💮 일기를 잘 썼어요!');
+        }
+        
+        await loadDiariesFromServer();
+        renderTodayForm();
+        renderCalendar();
+        calculateStreak();
+        
+    } catch(err) {
+        console.error("저장 에러 상세:", err);
+        alert('🚨 서버 전송 중 에러가 발생했습니다: ' + err.message);
+    }
+}
+
+// 🌐 [신규 추가] DB에 등록된 모든 계정에 웹 푸시 요청을 쏘는 핵심 브로드캐스팅 함수
+async function sendPushNotificationToAll(writerName, diarySnippet) {
+    try {
+        // 1. push_subscriptions 테이블에 등록된 모든 유저 기기 명부 수집
+        const { data: subscribers, error } = await _supabase
+            .from('push_subscriptions')
+            .select('*');
+
+        if (error) throw error;
+        if (!subscribers || subscribers.length === 0) return;
+
+        // 2. 외부 알림 브로커 서비스(또는 가상 프록시 엔드포인트) 호출 연동
+        // 명부에 등록된 기기들을 순회하며 자신을 제외한 모두에게 신호를 브로드캐스팅합니다.
+        subscribers.forEach(async (sub) => {
+            if (sub.username === writerName) return; // 글쓴이 본인은 제외
+
+            // Web Push 표준 명세 프로토콜에 의거하여 알림 페이로드 전송
+            // 웹 표준 Push의 암호화 키쌍 규칙에 맞추어 구독 기기로 직접 포스트 패치를 수행합니다.
+            await fetch(sub.endpoint, {
+                method: 'POST',
+                headers: {
+                    'TTL': '60',
+                    'Content-Type': 'application/octet-stream'
+                },
+                body: JSON.stringify({
+                    title: '📖 몽글 그림일기장 알림',
+                    body: `🧒 '${writerName}' 친구가 방금 일기를 올렸어요!`
+                })
+            }).catch(e => console.log("알림 개별 전송 패스 (오프라인 기기 등):", e.message));
+        });
+
+    } catch (err) {
+        console.error("푸시 전송 엔진 내부 예외:", err.message);
+    }
+}
+        function renderTodayForm() {
+            const selected = new Date(selectedDiaryDate);
+            const weekdays = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
+
+            document.getElementById('current-date-display').innerText = `${selectedDiaryDate} (${weekdays[selected.getDay()]})`;
+
+            const data = diaryDatabase[selectedDiaryDate];
+            document.getElementById('diary-text').value = "";
+            document.getElementById('weather').value = "☀️";
+            resetMediaSelection();
+
+            if(data) {
+                document.getElementById('diary-text').value = data.text || "";
+                document.getElementById('weather').value = data.weather || "☀️";
+                if(data.image) {
+                    selectedImageData = data.image;
+                    showFinalPreview(selectedImageData);
+                }
+            }
+            isDirty = false;
+        }
+
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+
+            document.getElementById('calendar-month-year').innerText = `${year}년 ${month + 1}월 방학 검사표`;
+
+            const firstDayIndex = new Date(year, month, 1).getDay();
+            const lastDay = new Date(year, month + 1, 0).getDate();
+            const calendarDays = document.getElementById('calendar-days');
+            calendarDays.innerHTML = "";
+            for (let i = 0; i < firstDayIndex; i++) {
+                calendarDays.appendChild(document.createElement('div'));
+            }
+
+            for (let day = 1; day <= lastDay; day++) {
+                const dayDiv = document.createElement('div');
+                const currentKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const targetDate = new Date(year, month, day);
+                const isFutureDate = targetDate > today;
+
+                dayDiv.style.border = "2px dashed #8b5a2b";
+                dayDiv.style.borderRadius = "0.5rem";
+                dayDiv.style.padding = "0.25rem";
+                dayDiv.style.height = "4.8rem";
+                dayDiv.style.position = "relative";
+                dayDiv.style.overflow = "hidden";
+                dayDiv.style.display = "flex";
+                dayDiv.style.flexDirection = "column";
+                dayDiv.style.justifyContent = "space-between";
+                dayDiv.style.cursor = "pointer";
+                dayDiv.style.backgroundColor = "#ffffff";
+                if (diaryDatabase[currentKey] && diaryDatabase[currentKey].image) {
+                    dayDiv.style.backgroundImage = `url(${diaryDatabase[currentKey].image})`;
+                    dayDiv.style.backgroundSize = 'cover';
+                    dayDiv.style.backgroundPosition = 'center';
+                    dayDiv.style.boxShadow = "inset 0 0 0 2000px rgba(255,255,255,0.5)";
+                }
+
+                const dayNum = document.createElement('span');
+                dayNum.innerText = day;
+                dayNum.style.fontWeight = "bold";
+                dayNum.style.fontSize = "1.25rem";
+
+                const dayOfWeek = new Date(year, month, day).getDay();
+                if (dayOfWeek === 0) dayNum.style.color = "#ef4444";
+                if (dayOfWeek === 6) dayNum.style.color = "#3b82f6";
+
+                dayDiv.appendChild(dayNum);
+                if (isFutureDate) {
+                    dayDiv.style.opacity = "0.35";
+                    dayDiv.style.cursor = "not-allowed";
+                    dayDiv.style.backgroundColor = "#e5e7eb";
+                    dayDiv.style.filter = "grayscale(0.5)";
+
+                    const lock = document.createElement('div');
+                    lock.innerText = "🔒";
+                    lock.style.position = "absolute";
+                    lock.style.bottom = "2px";
+                    lock.style.right = "4px";
+                    lock.style.fontSize = "14px";
+                    dayDiv.appendChild(lock);
+                    dayDiv.onclick = () => { alert("📅 미래 날짜의 일기는 아직 쓸 수 없어요!"); };
+                }
+                else if (diaryDatabase[currentKey]) {
+                    const prevDate = new Date(year, month, day);
+                    prevDate.setDate(prevDate.getDate() - 1);
+                    const prevKey = getFormattedDate(prevDate);
+
+                    if (diaryDatabase[prevKey]) {
+                        const line = document.createElement('div');
+                        line.style.position = "absolute";
+                        line.style.left = "-8px";
+                        line.style.top = "50%";
+                        line.style.width = "16px";
+                        line.style.height = "4px";
+                        line.style.background = "#ef4444";
+                        dayDiv.appendChild(line);
+                    }
+
+                    const icon = document.createElement('span');
+                    icon.innerText = "💮";
+                    icon.style.alignSelf = "flex-end";
+                    icon.style.fontSize = "1.25rem";
+                    dayDiv.appendChild(icon);
+
+                    dayDiv.onclick = () => { openModal(currentKey); };
+                }
+                else {
+                    dayDiv.onclick = () => { selectDiaryDate(currentKey); };
+                }
+
+                calendarDays.appendChild(dayDiv);
+            }
+        }
+
+        function changeMonth(direction) {
+            currentDate.setMonth(currentDate.getMonth() + direction);
+            renderCalendar();
+        }
+
+        function openModal(key) {
+            openedModalDate = key;
+            const data = diaryDatabase[key];
+            document.getElementById('modal-date').innerText = `📅 검사일: ${key}`;
+            document.getElementById('modal-weather').innerText = `날씨: ${data.weather}`;
+            document.getElementById('modal-text').innerText = data.text || "";
+            const mImg = document.getElementById('modal-image');
+            if(data.image) {
+                mImg.src = data.image;
+                mImg.style.display = 'block';
+            } else {
+                mImg.style.display = 'none';
+            }
+            document.getElementById('diary-modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('diary-modal').style.display = 'none';
+        }
+
+        function getFormattedDate(date) {
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const d = String(date.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+
+        async function selectDiaryDate(newDate) {
+            if(isDirty) {
+                const shouldSave = confirm("입력중인 일기를 저장할까요?");
+                if(shouldSave) { await saveDiary(true); }
+            }
+            selectedDiaryDate = newDate;
+            renderTodayForm();
+
+            const diaryInput = document.getElementById('diary-text');
+            diaryInput.focus();
+            setTimeout(() => {
+                diaryInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+        }
+
+        async function deleteDiary() {
+            if(!confirm('정말 이 일기를 삭제할까요?')) return;
+            try {
+                const { error } = await _supabase
+                    .from('diary_entries')
+                    .delete()
+                    .eq('diary_date', openedModalDate)
+                    .eq('username', childName);
+
+                if(error) throw error;
+
+                delete diaryDatabase[openedModalDate];
+                closeModal();
+                renderCalendar();
+                if(selectedDiaryDate === openedModalDate) {
+                    renderTodayForm();
+                }
+                alert('🗑️ 일기가 삭제되었습니다.');
+            } catch(err) {
+                alert('삭제 실패: ' + err.message);
+            }
+        }
+
+        async function goToHome() {
+            if (isDirty) {
+                const shouldSave = confirm("작성중인 일기를 저장할까요?");
+                if (shouldSave) { await saveDiary(true); }
+            }
+
+            const confirmMove = confirm("로그아웃하고 첫 화면으로 돌아갈까요?");
+            if (!confirmMove) return;
+
+            await _supabase.auth.signOut();
+
+            if(communityChannel) {
+                _supabase.removeChannel(communityChannel);
+                communityChannel = null;
+            }
+
+            document.getElementById('main-app').style.display = 'none';
+            document.getElementById('login-section').style.display = 'block';
+            renderUserList();
+        }
+
+        function saveUserName(name) {
+            let users = JSON.parse(localStorage.getItem('diaryUsers') || '[]');
+            if (!users.includes(name)) { users.unshift(name); }
+            users = users.slice(0, 5);
+            localStorage.setItem('diaryUsers', JSON.stringify(users));
+            renderUserList();
+        }
+
+        function renderUserList() {
+            const container = document.getElementById('recent-users');
+            if (!container) return;
+
+            const users = JSON.parse(localStorage.getItem('diaryUsers') || '[]');
+            container.innerHTML = "";
+            users.forEach(user => {
+                const btn = document.createElement('button');
+                btn.innerText = `🧒 ${user.split('@')[0]}`; 
+                btn.className = "px-3 py-1 bg-amber-100 hover:bg-amber-200 rounded-lg border border-amber-700 text-sm font-bold cursor-pointer";
+                btn.onclick = () => {
+                    document.getElementById('login-email').value = user;
+                    document.getElementById('login-password').focus();
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        async function editDiary() {
+            closeModal();
+            await selectDiaryDate(openedModalDate);
+            document.getElementById('diary-text').focus();
+        }
+
+        function calculateStreak() {
+            const keys = Object.keys(diaryDatabase).sort();
+            let streak = 0;
+            let today = new Date();
+            today.setHours(0,0,0,0);
+            for(let i = 0; i < 365; i++) {
+                const checkDate = new Date(today);
+                checkDate.setDate(today.getDate() - i);
+                const key = getFormattedDate(checkDate);
+
+                if(keys.includes(key)) { streak++; } 
+                else { break; }
+            }
+            document.getElementById('streak-box').innerText = `💮 ${streak}일 연속 그림일기 작성중!`;
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            localStorage.setItem('soundEnabled', soundEnabled);
+            document.getElementById('sound-toggle').innerText = soundEnabled ? '🔊' : '🔇';
+        }
+
+        let bgmOn = false;
+        function toggleYouTubeBGM() {
+            const iframe = document.getElementById('youtube-player');
+            const btn = document.getElementById('bgm-btn');
+            const rawUrl = "https://youtu.be/KEu5YL1VzEg?si=gNZ5AYJziHbA6tJi&t=15";
+            let videoId = "KEu5YL1VzEg";
+            if(rawUrl.includes("youtu.be/")) {
+                videoId = rawUrl.split("youtu.be/")[1].split("?")[0];
+            }
+
+            if(!bgmOn) {
+                iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1&playlist=${videoId}&playsinline=1&enablejsapi=1`;
+                bgmOn = true;
+                btn.innerText = "⏸ 음악 끄기";
+                btn.classList.replace('bg-red-500', 'bg-gray-600');
+            } else {
+                iframe.src = "";
+                bgmOn = false;
+                btn.innerText = "🎵 음악 재생";
+                btn.classList.replace('bg-gray-600', 'bg-red-500');
+            }
+        }
+
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            const installBtn = document.getElementById('install-btn');
+            if(installBtn) installBtn.classList.remove('hidden');
+        });
+        document.getElementById('install-btn')?.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') deferredPrompt = null;
+            }
+        });
+
+       // [교정 좌표: 맨 아래 DOMContentLoaded 실행 플러그 및 웹 푸시 허용 자동화]
+        window.addEventListener('DOMContentLoaded', () => {
+            renderUserList();
+            const autoUser = localStorage.getItem('lastLoggedInUser');
+            if (autoUser) {
+                const emailInput = document.getElementById('login-email');
+                if(emailInput) emailInput.value = autoUser;
+
+                const nicknameStorageKey = `diary_username_${autoUser}`;
+                const autoUsername = localStorage.getItem(nicknameStorageKey);
+                if (autoUsername) {
+                    childName = autoUsername;
+                    // 자동 로그인 성공 시 백그라운드 푸시 알림 등록 인터셉터 가동
+                    initPushNotification();
+                }
+            }
+        });
+
+        // 웹 푸시 서비스 워커 등록 및 권한 요청 함수
+        async function initPushNotification() {
+            if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+                console.log('이 브라우저는 푸시 알림을 지원하지 않습니다.');
+                return;
+            }
+
+            try {
+                // 1. 서비스 워커 등록 확인
+                const registration = await navigator.serviceWorker.register('/service-worker.js');
+                console.log('서비스 워커가 등록되었습니다:', registration);
+
+                // 2. 알림 권한 요청
+                const permission = await Notification.requestPermission();
+                if (permission !== 'granted') {
+                    console.log('사용자가 알림 권한을 거부했습니다.');
+                    return;
+                }
+
+                // 3. 푸시 서버(FCM VAPID) 구독 생성
+                // *주의: 공용 VAPID 공개키를 사용하거나 Firebase 콘솔에서 발급받은 키를 주입해야 합니다.
+                const applicationServerKey = urlB64ToUint8Array('BOvCKLrC7KfVQ_wl7wY5qPSHoNMer8c7DTJk-E1mdd01rDgWDzYkNDOV0-XHNWxn5TVfr_RhFvLuOi5IWPBeQoU');
+                const subscription = await registration.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: applicationServerKey
+                });
+
+                // 4. 발급받은 기기 토큰 신호를 Supabase DB에 업서트(공유 저장)
+                const subscriptionJson = subscription.toJSON();
+                await _supabase
+                    .from('push_subscriptions')
+                    .upsert({
+                        endpoint: subscriptionJson.endpoint,
+                        auth: subscriptionJson.keys.auth,
+                        p256dh: subscriptionJson.keys.p256dh,
+                        username: childName
+                    }, { onConflict: 'endpoint' });
+
+                console.log('🚀 모든 계정 브로드캐스팅 푸시 알림 명부에 등록 완료!');
+
+            } catch (err) {
+                console.error('푸시 알림 등록 중 예외 발생:', err);
+            }
+        }
+
+        // VAPID 키 변환용 헬퍼 함수
+        function urlB64ToUint8Array(base64String) {
+            const padding = '='.repeat((4 - base64String.length % 4) % 4);
+            const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+            const rawData = window.atob(base64);
+            const outputArray = new Uint8Array(rawData.length);
+            for (let i = 0; i < rawData.length; ++i) {
+                outputArray[i] = rawData.charCodeAt(i);
+            }
+            return outputArray;
+        }
+        
+    </script>
+</body>
+</html>
