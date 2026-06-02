@@ -14,9 +14,7 @@
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#2b4436">
    
-    <link rel="apple-touch-icon" sizes="180x180" href="/icon-192.png">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <!-- <<<<<<< HEAD=======>>>>>>> 98e061b7f8b410acbe570a0967bf2a5371711dae -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/icon-192.png"> 
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="그림일기">
    
@@ -121,12 +119,14 @@
             
             <div class="space-y-4">
                 <input type="email" id="login-email" placeholder="이메일 (example@email.com)" class="w-full border-b-4 border-amber-800 bg-transparent text-xl text-center focus:outline-none placeholder-amber-600 font-bold tracking-wide">
-                <input type="password" id="login-password" placeholder="비밀번호 입력" class="w-full border-b-4 border-amber-800 bg-transparent text-xl text-center focus:outline-none placeholder-amber-600 font-bold tracking-wide" autocomplete="new-password">
+                
+                <input type="password" id="login-password" onkeydown="checkEnterLogin(event)" placeholder="비밀번호 입력" class="w-full border-b-4 border-amber-800 bg-transparent text-xl text-center focus:outline-none placeholder-amber-600 font-bold tracking-wide" autocomplete="new-password">
 
                 <div class="flex gap-2 pt-2">
                     <button onclick="handleLogin()" class="w-1/2 bg-red-600 hover:bg-red-700 text-white text-xl font-bold py-3 rounded-xl shadow-md transition duration-200 border-2 border-white cursor-pointer">로그인 📖</button>
                     <button onclick="handleSignUp()" class="w-1/2 bg-yellow-700 hover:bg-yellow-800 text-white text-xl font-bold py-3 rounded-xl shadow-md transition duration-200 border-2 border-white cursor-pointer">회원가입 ✨</button>
                 </div>
+            </div>
                 
                 <div class="mt-4">
                     <p class="text-amber-800 font-bold mb-2">최근 접속 계정</p>
@@ -277,12 +277,15 @@ class="w-full bg-white border-2 border-amber-900 rounded-lg shadow-inner focus:o
         const stampSound = new Audio('stamp.mp3');
         let canvas, ctx, isDrawing = false;
 
-        // Supabase 이메일 로그인 처리 엔진
+        // ==========================================
+        // 1 & 3. 닉네임 격리화 및 캘린더 날짜 초기화 엔진 보완
+        // ==========================================
         async function handleLogin() {
             const email = document.getElementById('login-email').value.trim();
             const password = document.getElementById('login-password').value;
 
             if(!email || !password) return alert('이메일과 비밀번호를 모두 입력해 주세요! 👦');
+            
             try {
                 const { data, error } = await _supabase.auth.signInWithPassword({
                     email: email,
@@ -291,23 +294,23 @@ class="w-full bg-white border-2 border-amber-900 rounded-lg shadow-inner focus:o
                 if (error) throw error;
 
                 const userEmail = data.user.email;
+                const userId = data.user.id; // 계정 고유 ID 추출
                 localStorage.setItem('lastLoggedInUser', userEmail); 
-                saveUserName(userEmail); 
+                saveUserName(userEmail);
 
-                // ✅ Supabase 서버에서 닉네임 불러오기 (모든 기기/브라우저 동일하게 유지)
+                // ✅ 타 계정 오염 방지: 오직 현재 로그인한 계정 고유의 메타데이터만 신뢰
                 let savedUsername = data.user.user_metadata?.nickname || '';
 
-                // 기존에 localStorage에 저장된 닉네임이 있으면 서버로 마이그레이션 (1회)
+                // 타 계정 닉네임 혼선 차단: 계정 이메일이 포함된 고유 키값으로 로컬 백업 확인
                 if (!savedUsername) {
-                    const oldNickname = localStorage.getItem(`diary_username_${userEmail}`) || localStorage.getItem('diary_username') || '';
-                    if (oldNickname.trim()) {
+                    const oldNickname = localStorage.getItem(`diary_username_${userEmail}`);
+                    if (oldNickname && oldNickname.trim()) {
                         savedUsername = oldNickname.trim();
                         await _supabase.auth.updateUser({ data: { nickname: savedUsername } });
-                        alert(`🎉 기존 닉네임 '${savedUsername}'을 서버에 저장했어요!\n이제 어디서 로그인해도 같은 닉네임이 유지됩니다.`);
                     }
                 }
 
-                // 서버에도, localStorage에도 닉네임이 없으면 새로 입력 받기
+                // 닉네임이 아예 없는 신규 유저인 경우 독립 공간 부여
                 if (!savedUsername || savedUsername.trim() === '') {
                     while (!savedUsername || savedUsername.trim() === '') {
                         savedUsername = prompt("🎨 환영합니다! 일기장에 표시될 닉네임을 정해주세요!");
@@ -318,27 +321,30 @@ class="w-full bg-white border-2 border-amber-900 rounded-lg shadow-inner focus:o
                         }
                         savedUsername = savedUsername.trim();
                     }
-                    // ✅ Supabase 서버에 저장 → 이후 모든 기기에서 자동 적용
+                    // Supabase Auth Meta 데이터베이스에 유일 독립 키로 닉네임 바인딩
                     await _supabase.auth.updateUser({ data: { nickname: savedUsername } });
                     alert(`반갑습니다, ${savedUsername}님! 오늘 하루 일기를 써봅시다. ✨`);
                 }
 
+                // 전역 안전 세션 할당
                 childName = savedUsername;
                 diaryDatabase = {};
+                
+                // ✅ [3번 요청 해결] 로그인 시 무조건 오늘(Today) 날짜 기준으로 달력과 선택일을 강제 초기화
+                currentDate = new Date(); 
+                selectedDiaryDate = getFormattedDate(new Date());
                 
                 document.getElementById('login-section').style.display = 'none';
                 const mainApp = document.getElementById('main-app');
                 mainApp.style.display = 'flex';
                 mainApp.classList.remove('hidden');
                 
-                selectedDiaryDate = getFormattedDate(new Date());
                 initApp();
             } catch (err) {
                 console.error("로그인 에러:", err.message);
                 alert('🚨 로그인에 실패했습니다: ' + err.message);
             }
         }
-
         // Supabase 회원가입 기능 엔진 
             async function handleSignUp() {
             const email = document.getElementById('login-email').value.trim();
@@ -413,35 +419,35 @@ class="w-full bg-white border-2 border-amber-900 rounded-lg shadow-inner focus:o
             }
         }
 
-        function setupRealtimeSync() {
-    if (communityChannel) {
-        _supabase.removeChannel(communityChannel);
-    }
-
-    communityChannel = _supabase
-        .channel('schema-db-changes')
-        .on(
-            'postgres_changes',
-            { event: '*', schema: 'public', table: 'diary_entries' }, // ✅ pattern → schema 오타 수정
-            (payload) => {
-                const box = document.getElementById('community-list');
-                if (box && !box.classList.contains('hidden')) {
-                    fetchCommunityData();
-                }
-                if (payload.new && payload.new.username === childName) {
-                    loadDiariesFromServer().then(() => {
-                        renderCalendar();
-                        calculateStreak();
-                    });
-                }
-                // ✅ 다른 친구가 일기를 새로 올리면 인앱 토스트 알림 표시
-                if (payload.eventType === 'INSERT' && payload.new && payload.new.username !== childName) {
-                    showFriendToast(payload.new.username, payload.new.diary_text);
-                }
+            function setupRealtimeSync() {
+            if (communityChannel) {
+                _supabase.removeChannel(communityChannel);
             }
-        )
-        .subscribe();
-}
+
+            communityChannel = _supabase
+                .channel('schema-db-changes')
+                .on(
+                    'postgres_changes',
+                    { event: '*', schema: 'public', table: 'diary_entries' },
+                    (payload) => {
+                        // ✅ [2번 요청 해결] 커뮤니티 UI 창의 hidden 클래스 존재 유무와 관계없이 메모리와 리스트를 무조건 실시간 동기화
+                        fetchCommunityData(); 
+
+                        if (payload.new && payload.new.username === childName) {
+                            loadDiariesFromServer().then(() => {
+                                renderCalendar();
+                                calculateStreak();
+                            });
+                        }
+                        
+                        // 다른 친구가 일기를 등록했을 때 알림 토스트 팝업 가동
+                        if (payload.eventType === 'INSERT' && payload.new && payload.new.username !== childName) {
+                            showFriendToast(payload.new.username, payload.new.diary_text);
+                        }
+                    }
+                )
+                .subscribe();
+        }
 
         // ✅ 버디버디 스타일 토스트 알림 함수
         function showFriendToast(username, text) {
@@ -1292,6 +1298,15 @@ async function sendPushNotificationToAll(writerName, diarySnippet) {
 
         function closeCommunityModal() {
             document.getElementById('community-modal').style.display = 'none';
+        }
+
+        // ==========================================
+        // 4. 엔터키 누르면 로그인 실행 기능 추가
+        // ==========================================
+        function checkEnterLogin(event) {
+            if (event.key === 'Enter') {
+                handleLogin();
+            }
         }
     </script>
     <!-- ✅ 회원가입 안내 모달 (새로 추가) -->
