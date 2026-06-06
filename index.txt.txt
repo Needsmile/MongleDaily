@@ -780,15 +780,16 @@ async function saveDiary(silent = false) {
             const REST_API_KEY = "os_v2_app_7fzhurcgnne3tiknr2epnyfwiwqh33scnp7eijeaojow2kaq4e6vvi34yd225gwkfxyoh35bpgej3thmqxj5famtbk222j4eqkcez5q"; 
 
             try {
-                await fetch("https://onesignal.com/api/v1/notifications", {
-                    method: "POST",
+                // ✅ Preflight(OPTIONS) 요청을 정상 처리해 주는 프록시로 우회합니다.
+                await fetch("https://thingproxy.freeboard.io/fetch/https://onesignal.com/api/v1/notifications", {
+                    method: "POST",        
                     headers: {
                         "Content-Type": "application/json",
                         "Authorization": `Basic ${REST_API_KEY}`
                     },
                     body: JSON.stringify({
                         app_id: APP_ID,
-                        included_segments: ["All"], // 일기장을 구독한 모두에게 발송
+                        included_segments: ["Total Subscriptions"], // 일기장을 구독한 모두에게 발송
                         headings: { "en": "📖 몽글 그림일기", "ko": "📖 몽글 그림일기" },
                         contents: { "en": `🧒 '${writerName}' 님이 일기를 올렸어요!`, "ko": `🧒 '${writerName}' 님이 일기를 올렸어요!` },
                         url: window.location.href // 알림을 누르면 일기장으로 바로 이동
@@ -1115,8 +1116,6 @@ async function saveDiary(silent = false) {
                 const autoUsername = localStorage.getItem(nicknameStorageKey);
                 if (autoUsername) {
                     childName = autoUsername;
-                    // 자동 로그인 성공 시 백그라운드 푸시 알림 등록 인터셉터 가동
-                    initPushNotification();
                 }
             }
             // ✅ 이메일 인증 완료 후 리다이렉트 감지

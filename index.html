@@ -773,7 +773,41 @@ async function saveDiary(silent = false) {
     }
 }
 
-        // 🌐 OneSignal을 이용한 튼튼한 푸시 알림 브로드캐스팅 함수
+            // ✅ 외부 중계 도메인 폭파 문제를 완벽하게 방어하는 프록시 우회 로직으로 교체합니다.
+            async function sendPushNotificationToAll(title, contents) {
+                try {
+                    const targetUrl = "https://onesignal.com/api/v1/notifications";
+                    
+                    // 방법 A: 프록시 주소 뒤에 '?'를 붙여 OPTIONS 요청을 강제 우회하는 고성능 공용 프록시 사용
+                    const proxyUrl = `https://corsproxy.org/?${encodeURIComponent(targetUrl)}`;
+
+                    const response = await fetch(proxyUrl, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            app_id: "f9727a44-466b-49b9-a14d-8e88f6e0b645", // 코드 상단에 선언된 OneSignal AppID와 일치
+                            included_segments: ["All"],
+                            headings: { en: title, ko: title },
+                            contents: { en: contents, ko: contents }
+                        })
+                    });
+
+                    // 프록시 자체의 응답 상태 체크
+                    if (!response.ok) {
+                        console.warn("원시그널 프록시 응답 신호 미약 (Status):", response.status);
+                        return;
+                    }
+                    
+                    console.log("🚀 [성공] 원시그널 우회망을 통해 전체 푸시 알림이 발송되었습니다!");
+                } catch (error) {
+                    // 🛑 핵심: 알림 서버가 꺼져 있더라도 전체 일기 저장이 멈추지 않도록 예외 격리
+                    console.error("알림 전송 실패(무시하고 일기 저장 진행):", error);
+                }
+            }
+
+        /* // 🌐 OneSignal을 이용한 튼튼한 푸시 알림 브로드캐스팅 함수
         async function sendPushNotificationToAll(writerName, diarySnippet) {
             // OneSignal 대시보드에서 발급받을 키 값들입니다.
             const APP_ID = "f9727a44-466b-49b9-a14d-8e88f6e0b645";
@@ -799,7 +833,7 @@ async function saveDiary(silent = false) {
             } catch (err) {
                 console.error("알림 전송 실패:", err.message);
             }
-        }
+        } */
         function renderTodayForm() {
             const selected = new Date(selectedDiaryDate);
             const weekdays = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
