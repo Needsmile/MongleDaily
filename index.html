@@ -780,8 +780,8 @@ async function saveDiary(silent = false) {
             const REST_API_KEY = "os_v2_app_7fzhurcgnne3tiknr2epnyfwiwqh33scnp7eijeaojow2kaq4e6vvi34yd225gwkfxyoh35bpgej3thmqxj5famtbk222j4eqkcez5q"; 
 
             try {
-                // ✅ 안전한 심부름센터(프록시)를 거쳐서 CORS 경호원을 합법적으로 통과합니다!
-                await fetch("https://corsproxy.io/?https://onesignal.com/api/v1/notifications", {
+                // ✅ Preflight(OPTIONS) 요청을 정상 처리해 주는 프록시로 우회합니다.
+                await fetch("https://thingproxy.freeboard.io/fetch/https://onesignal.com/api/v1/notifications", {
                     method: "POST",        
                     headers: {
                         "Content-Type": "application/json",
