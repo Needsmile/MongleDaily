@@ -111,13 +111,14 @@
 
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
     <script>
-      window.OneSignalDeferred = window.OneSignalDeferred || [];
-      OneSignalDeferred.push(function(OneSignal) {
-        OneSignal.init({
-          appId: "여기에_나중에_원시그널_App_ID를_넣습니다", // 나중에 가입 후 채워넣을 부분
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function(OneSignal) {
+        await OneSignal.init({
+        appId: "f9727a44-466b-49b9-a14d-8e88f6e0b645",
         });
-      });
+    });
     </script>
+    
 </head>
 <body class="p-3 md:p-6 flex flex-col items-center min-h-screen">
 
