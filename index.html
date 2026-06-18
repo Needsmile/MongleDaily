@@ -772,75 +772,22 @@ async function saveDiary(silent = false) {
         alert('🚨 서버 전송 중 에러가 발생했습니다: ' + err.message);
     }
 }
-
-            // ✅ 외부 중계 도메인 폭파 문제를 완벽하게 방어하는 프록시 우회 로직으로 교체합니다.
             async function sendPushNotificationToAll(title, contents) {
                 try {
-                    const targetUrl = "https://onesignal.com/api/v1/notifications";
+                    console.log("🚀 Supabase Edge Function을 통해 푸시 알림 서버로 신호를 보냅니다...");
                     
-                    // 방법 A: 프록시 주소 뒤에 '?'를 붙여 OPTIONS 요청을 강제 우회하는 고성능 공용 프록시 사용
-                    // 기존
-                    // const proxyUrl = `https://corsproxy.org/?${encodeURIComponent(targetUrl)}`;
-
-                    // 변경 (예시)
-                    const proxyUrl = `https://thingproxy.freeboard.io/fetch/${targetUrl}`;
-
-                    const response = await fetch(proxyUrl, {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify({
-                            app_id: "f9727a44-466b-49b9-a14d-8e88f6e0b645", // 코드 상단에 선언된 OneSignal AppID와 일치
-                            included_segments: ["All"],
-                            headings: { en: title, ko: title },
-                            contents: { en: contents, ko: contents }
-                        })
+                    // Supabase에 배포한 'onesignal-push' 함수를 호출합니다.
+                    const { data, error } = await _supabase.functions.invoke('onesignal-push', {
+                        body: { title: title, contents: contents }
                     });
 
-          // 기존 sendPushNotificationToAll 함수 전체를 이 코드로 덮어씌워 주세요.
-            async function sendPushNotificationToAll(title, contents) {
-                // 하단 주석에 있던 OneSignal 키값들을 가져옵니다.
-                const APP_ID = "f9727a44-466b-49b9-a14d-8e88f6e0b645";
-                const REST_API_KEY = "os_v2_app_7fzhurcgnne3tiknr2epnyfwixyrcqk3yrnuo5ehj5uc3u445vnc427aqosnmllf2aj3jplcvonzkprq5sa64ism67gugr5pqkq5fgi"; 
-
-                try {
-                    // CORS 우회를 위해 안정적인 프록시를 사용하고, Authorization 헤더를 필수적으로 포함합니다.
-                    const response = await fetch("https://thingproxy.freeboard.io/fetch/https://onesignal.com/api/v1/notifications", {
-                        method: "POST",        
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Authorization": `Basic ${os_v2_app_7fzhurcgnne3tiknr2epnyfwixyrcqk3yrnuo5ehj5uc3u445vnc427aqosnmllf2aj3jplcvonzkprq5sa64ism67gugr5pqkq5fgi}` // 이 부분이 빠져서 그동안 안 되었던 것입니다.
-                        },
-                        body: JSON.stringify({
-                            app_id: APP_ID,
-                            included_segments: ["Total Subscriptions"], // 알림을 허용한 모두에게 발송
-                            headings: { "en": "📖 몽글 그림일기", "ko": "📖 몽글 그림일기" },
-                            contents: { "en": contents, "ko": contents },
-                            url: window.location.href // 알림을 누르면 일기장으로 바로 이동
-                        })
-                    });
-
-                    if (!response.ok) {
-                        console.warn("원시그널 응답 상태 이상:", response.status);
-                        return;
+                    if (error) {
+                        throw error;
                     }
-                    
-                    console.log("🚀 [성공] 푸시 알림이 발송되었습니다!");
-                } catch (err) {
-                    console.error("알림 전송 실패 (무시하고 일기 저장 진행):", err.message);
-                }
-            }
-          // 프록시 자체의 응답 상태 체크
-                    if (!response.ok) {
-                        console.warn("원시그널 프록시 응답 신호 미약 (Status):", response.status);
-                        return;
-                    }
-                    
-                    console.log("🚀 [성공] 원시그널 우회망을 통해 전체 푸시 알림이 발송되었습니다!");
+
+                    console.log("🚀 [성공] 서버를 통해 푸시 알림이 발송되었습니다!", data);
                 } catch (error) {
-                    // 🛑 핵심: 알림 서버가 꺼져 있더라도 전체 일기 저장이 멈추지 않도록 예외 격리
-                    console.error("알림 전송 실패(무시하고 일기 저장 진행):", error);
+                    console.error("알림 전송 실패(무시하고 일기 저장 진행):", error.message || error);
                 }
             }
 
