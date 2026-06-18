@@ -779,7 +779,11 @@ async function saveDiary(silent = false) {
                     const targetUrl = "https://onesignal.com/api/v1/notifications";
                     
                     // 방법 A: 프록시 주소 뒤에 '?'를 붙여 OPTIONS 요청을 강제 우회하는 고성능 공용 프록시 사용
-                    const proxyUrl = `https://corsproxy.org/?${encodeURIComponent(targetUrl)}`;
+                    // 기존
+                    // const proxyUrl = `https://corsproxy.org/?${encodeURIComponent(targetUrl)}`;
+
+                    // 변경 (예시)
+                    const proxyUrl = `https://thingproxy.freeboard.io/fetch/${targetUrl}`;
 
                     const response = await fetch(proxyUrl, {
                         method: "POST",
@@ -840,33 +844,6 @@ async function saveDiary(silent = false) {
                 }
             }
 
-        /* // 🌐 OneSignal을 이용한 튼튼한 푸시 알림 브로드캐스팅 함수
-        async function sendPushNotificationToAll(writerName, diarySnippet) {
-            // OneSignal 대시보드에서 발급받을 키 값들입니다.
-            const APP_ID = "f9727a44-466b-49b9-a14d-8e88f6e0b645";
-            const REST_API_KEY = "os_v2_app_7fzhurcgnne3tiknr2epnyfwiwqh33scnp7eijeaojow2kaq4e6vvi34yd225gwkfxyoh35bpgej3thmqxj5famtbk222j4eqkcez5q"; 
-
-            try {
-                // ✅ Preflight(OPTIONS) 요청을 정상 처리해 주는 프록시로 우회합니다.
-                await fetch("https://thingproxy.freeboard.io/fetch/https://onesignal.com/api/v1/notifications", {
-                    method: "POST",        
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Basic ${REST_API_KEY}`
-                    },
-                    body: JSON.stringify({
-                        app_id: APP_ID,
-                        included_segments: ["Total Subscriptions"], // 일기장을 구독한 모두에게 발송
-                        headings: { "en": "📖 몽글 그림일기", "ko": "📖 몽글 그림일기" },
-                        contents: { "en": `🧒 '${writerName}' 님이 일기를 올렸어요!`, "ko": `🧒 '${writerName}' 님이 일기를 올렸어요!` },
-                        url: window.location.href // 알림을 누르면 일기장으로 바로 이동
-                    })
-                });
-                console.log("알림이 성공적으로 전송되었습니다!");
-            } catch (err) {
-                console.error("알림 전송 실패:", err.message);
-            }
-        } */
         function renderTodayForm() {
             const selected = new Date(selectedDiaryDate);
             const weekdays = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
